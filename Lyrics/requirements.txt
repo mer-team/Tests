@@ -1,0 +1,4 @@
+LyricsGenius
+SpeechRecognition
+textract
+python-dotenv
