@@ -15,3 +15,5 @@ lyrics = json_data['lyrics']
 
 
 print(lyrics)
+
+# so permite pedidos de 2 em 2 minutos

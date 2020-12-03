@@ -8,7 +8,7 @@ pp = pprint.PrettyPrinter(indent=4)
 
 features, features_frames = es.MusicExtractor(lowlevelStats=['mean', 'stdev'],
                                               rhythmStats=['mean', 'stdev'],
-                                              tonalStats=['mean', 'stdev'])('./song.mp3')
+                                              tonalStats=['mean', 'stdev'])('./song.wav')
 
 # pp.pprint(sorted(features.descriptorNames())) # See all feature names in the pool in a sorted order
 # print('Number of features:', len(features.descriptorNames())) # 161

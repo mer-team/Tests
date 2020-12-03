@@ -1,4 +1,4 @@
 LyricsGenius
-SpeechRecognition
-textract
+# SpeechRecognition
+# textract
 python-dotenv

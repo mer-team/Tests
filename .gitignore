@@ -277,4 +277,13 @@ dmypy.json
 ### Vagrant Patch ###
 *.box
 
+### Ignore audio files ###
+*.wav
+*.mp3
+*.mp4
+
+### Ignore pre trained models from Spleeter ###
+
+pretrained_models/
+
 # End of https://www.toptal.com/developers/gitignore/api/linux,python,dotenv,node,vagrant
