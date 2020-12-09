@@ -29,10 +29,4 @@ Vagrant.configure("2") do |config|
   SHELL
 end
 
-# python3.7 -m pip install --no-cache-dir spleeter
-
-# https://colab.research.google.com/github/deezer/spleeter/blob/master/spleeter.ipynb#scrollTo=ibXd-WCTpT0w
-
 #fazer download de pretrained_models das releases - https://github.com/deezer/spleeter/releases/tag/v1.4.0
-
-# vagrant plugin install vagrant-disksize
