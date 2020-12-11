@@ -1,5 +1,7 @@
 # Tests
 
+The use of the Spleeter requires the download of the desired pre-trained model from the github releases and it should be placed in a folder named pretrained_models
+
 ## Python
 
 Use python3.7 and pip3.7
