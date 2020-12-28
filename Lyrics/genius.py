@@ -7,11 +7,10 @@ load_dotenv()
 
 API_KEY=os.environ.get("GENIUS_KEY")
 
-
-
 genius = lg.Genius(API_KEY,
                     skip_non_songs=True,
-                    remove_section_headers=True)
+                    remove_section_headers=True,
+                    excluded_terms = ["(Remix)", "(Live)"])
 
 song = genius.search_song("Alone", "Marshmello")
 print(song)
