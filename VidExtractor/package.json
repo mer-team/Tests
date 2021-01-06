@@ -4,6 +4,7 @@
   "description": "",
   "main": "convert.js",
   "dependencies": {
+    "amqplib": "^0.6.0",
     "audiobuffer-to-wav": "^1.0.0",
     "ffmpeg": "0.0.4",
     "fluent-ffmpeg": "^2.1.2",
