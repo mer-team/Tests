@@ -7,30 +7,38 @@ import pika
 connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
 channel = connection.channel()
 
+channel.queue_declare(queue='separate')
 channel.queue_declare(queue='segmentation')
 
-# Using embedded configuration.
-separator = Separator('spleeter:2stems')
-# separator = Separator('spleeter:4stems')
+def callback(ch, method, properties, body):
+    print(" [x] Received %r" % body)
 
-audio="song.wav"
-destination="./Output"
+    # Using embedded configuration.
+    separator = Separator('spleeter:2stems')
+    # separator = Separator('spleeter:4stems')
 
-# Start the stopwatch / counter 
-t1_start = perf_counter()  
+    audio="/vagrant/VidExtractor/" + body.decode("utf-8") + ".wav"
+    destination="./Output"
 
-separator.separate_to_file(audio, destination)
+    # Start the stopwatch / counter 
+    t1_start = perf_counter()  
 
-# Stop the stopwatch / counter 
-t1_stop = perf_counter() 
-  
-  
-print("Elapsed time in seconds:", t1_stop-t1_start) 
+    separator.separate_to_file(audio, destination)
 
-channel.basic_publish(exchange='',
-                      routing_key='segmentation',
-                      body=audio[:-4])
-print(" [x] Sent " + audio)
+    # Stop the stopwatch / counter 
+    t1_stop = perf_counter() 
+    
+    
+    print("Elapsed time in seconds:", t1_stop-t1_start) 
 
+    channel.basic_publish(exchange='',
+                        routing_key='segmentation',
+                        body=body)
+    print(" [x] Sent %r" % body)
 
-# spleeter separate -i song.wav -o ./Output -p spleeter:2stems
+channel.basic_consume(queue='separate',
+                      auto_ack=True,
+                      on_message_callback=callback)
+
+print(' [*] Waiting for messages. To exit press CTRL+C')
+channel.start_consuming()
