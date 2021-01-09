@@ -14,7 +14,7 @@
     "wav": "^1.0.2",
     "wav-file-info": "0.0.10",
     "wavefile": "^11.0.0",
-    "ytdl-core": "^4.1.4"
+    "ytdl-core": "^4.4.1"
   },
   "devDependencies": {},
   "scripts": {

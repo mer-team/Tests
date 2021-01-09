@@ -1,9 +1,10 @@
 var ffmpeg = require('fluent-ffmpeg');
 var amqp = require('amqplib/callback_api');
 
-segmentation = async (path,audio) => {
+segmentation = async (channel, folder, audio) => {
+    var path = "/vagrant/SourceSeparation/Spleeter/Output/" + folder + "/";
     // file metadata
-    ffmpeg.ffprobe(path + audio + '.wav', function (err, metadata) {
+    ffmpeg.ffprobe(path + audio + '.wav', async function (err, metadata) {
         var inputSec = 0;
         var duration = metadata.format.duration;
         // Round a number upward to its nearest integer:
@@ -20,6 +21,13 @@ segmentation = async (path,audio) => {
                 })
                 .on('end', function () {
                     // console.log('Processing finished!')
+                    // true when i is the last file and audio is vocals
+                    // so it just trigger once
+                    if (i == nFiles && audio == "vocals") {
+                        var q = 'musicFeatures';
+                        channel.sendToQueue(q, Buffer.from(folder));
+                        console.log(" [x] Sent %s", folder);
+                    }
                 })
                 .saveToFile(path + audio + i + ".wav");
 
@@ -28,13 +36,11 @@ segmentation = async (path,audio) => {
     });
 }
 
-
-
-amqp.connect('amqp://localhost', function (error0, connection) {
+amqp.connect('amqp://localhost', async function (error0, connection) {
     if (error0) {
         throw error0;
     }
-    connection.createChannel(function (error1, channel) {
+    connection.createChannel(async function (error1, channel) {
         if (error1) {
             throw error1;
         }
@@ -49,10 +55,8 @@ amqp.connect('amqp://localhost', function (error0, connection) {
             var folder = msg.content.toString()
             console.log(" [x] Received %s", folder);
             //using source separation with 2 stems (vocals and accompaniment) 
-            var path = "/vagrant/SourceSeparation/Spleeter/Output/" + folder + "/"
-            segmentation(path,'vocals');
-            segmentation(path,'accompaniment');
-            console.log("  Finished")
+            segmentation(channel, folder, 'accompaniment');
+            segmentation(channel, folder, 'vocals');
         }, {
             noAck: true
         });
