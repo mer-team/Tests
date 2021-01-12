@@ -2,3 +2,4 @@ LyricsGenius
 # SpeechRecognition
 # textract
 python-dotenv
+pika

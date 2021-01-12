@@ -45,12 +45,27 @@ extractVideo = async (url, ch) => {
 			.on('error', function (err) {
 				console.log('An error occurred: ' + err.message);
 			})
-			.on('end', function () {
+			.on('end', async function () {
 				console.log('Completed video extraction!')
 				var q = 'separate';
 				ch.assertQueue(q, { durable: false });
-				ch.sendToQueue(q, Buffer.from(vID),{ persistent: false });
+				ch.sendToQueue(q, Buffer.from(vID), { persistent: false });
 				console.log(" [x] Sent '%s'", vID);
+				//get video info
+				await ytdl.getBasicInfo(url).then(function (videoInfo, err) {
+					if (err) throw new Error(err);
+
+					// console.log(videoInfo.videoDetails.media)
+					var media = videoInfo.videoDetails.media;
+					var toSend = {
+						"song": media.song,
+						"artist": media.artist
+					}
+					var queue = 'Lyrics';
+					ch.assertQueue(queue, { durable: false });
+					ch.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)), { persistent: false });
+					console.log(" [x] Sent '%s'", toSend);
+				});
 			})
 			.saveToFile(output);
 	});
@@ -77,12 +92,12 @@ startScript = async () => {
 			// ch.consume(q, async function (msg) {
 			// 	console.log(" [x] Received %s", msg.content.toString());
 			// 	var url = msg.content.toString();
-				var url = "https://www.youtube.com/watch?v=ALZHF5UqnU4";
-				var vURL = validURL(url).then(u => u)
-				if (vURL) {
-					 extractVideo(url, channel).then();
-				}
-			}, { noAck: true });
+			var url = "https://www.youtube.com/watch?v=ALZHF5UqnU4";
+			var vURL = validURL(url).then(u => u)
+			if (vURL) {
+				extractVideo(url, channel).then();
+			}
+		}, { noAck: true });
 		// });
 	});
 }
