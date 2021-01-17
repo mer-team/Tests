@@ -10,7 +10,7 @@ load_dotenv()
 connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
 channel = connection.channel()
 
-channel.queue_declare(queue='Lyrics')
+channel.queue_declare(queue='lyrics')
 
 API_KEY=os.environ.get("GENIUS_KEY")
 
@@ -33,9 +33,9 @@ def callback(ch, method, properties, body):
     if song != None:
         s = song.save_lyrics(filename=info['song'], extension='txt', overwrite='true')
     else:
-        print("Not Found")
+        print("Music Not Found")
 
-channel.basic_consume(queue='Lyrics',
+channel.basic_consume(queue='lyrics',
                       auto_ack=True,
                       on_message_callback=callback)
 

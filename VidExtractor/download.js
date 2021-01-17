@@ -47,10 +47,6 @@ extractVideo = async (url, ch) => {
 			})
 			.on('end', async function () {
 				console.log('Completed video extraction!')
-				var q = 'separate';
-				ch.assertQueue(q, { durable: false });
-				ch.sendToQueue(q, Buffer.from(vID), { persistent: false });
-				console.log(" [x] Sent '%s'", vID);
 				//get video info
 				await ytdl.getBasicInfo(url).then(function (videoInfo, err) {
 					if (err) throw new Error(err);
@@ -58,13 +54,18 @@ extractVideo = async (url, ch) => {
 					// console.log(videoInfo.videoDetails.media)
 					var media = videoInfo.videoDetails.media;
 					var toSend = {
-						"song": media.song,
-						"artist": media.artist
+						Service: "VidExtractor",
+						Result: {
+							"vID": vID,
+							"song": media.song,
+							"artist": media.artist
+						}
 					}
-					var queue = 'Lyrics';
+
+					var queue = 'management';
 					ch.assertQueue(queue, { durable: false });
 					ch.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)), { persistent: false });
-					console.log(" [x] Sent '%s'", toSend);
+					console.log(" [x] Sent '%s' to '%s", toSend, queue);
 				});
 			})
 			.saveToFile(output);
