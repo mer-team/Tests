@@ -21,35 +21,38 @@ amqp.connect('amqp://localhost', function (error0, connection) {
 
             var service = body.Service;
             var result = body.Result;
-
-            switch(service) {
+            switch (service) {
                 case "VidExtractor":
-                    // SOURCE SEPARATION
-                    var queue = 'separate';
-                    channel.assertQueue(queue, {
-                        durable: false
-                    });
-                    var vID = result.vID;
-                    channel.sendToQueue(queue, Buffer.from(vID));
-                    console.log(" [x] Sent %s to %s", vID, queue);
-                    // LYRICS
-                    queue = 'lyrics';
-                    channel.assertQueue(queue, {
-                        durable: false
-                    });
-                    var toSend = {
-                        song: result.song,
-                        artist: result.artist
-                    };
-                    channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
-                    console.log(" [x] Sent %s to %s", toSend, queue);
-                  break;
+                    if (result == "Not a music") {
+                        console.log("Not Music. Ending!")
+                    } else {
+                        // SOURCE SEPARATION
+                        var queue = 'separate';
+                        channel.assertQueue(queue, {
+                            durable: false
+                        });
+                        var vID = result.vID;
+                        channel.sendToQueue(queue, Buffer.from(vID));
+                        console.log(" [x] Sent %s to %s", vID, queue);
+                        // LYRICS
+                        queue = 'lyrics';
+                        channel.assertQueue(queue, {
+                            durable: false
+                        });
+                        var toSend = {
+                            song: result.song,
+                            artist: result.artist
+                        };
+                        channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
+                        console.log(" [x] Sent %s to %s", toSend, queue);
+                    }
+                    break;
                 case "Spleeter":
                     // TO DO
-                  break;
+                    break;
                 default:
-                  // code block
-              }
+                // code block
+            }
         }, {
             noAck: true
         });

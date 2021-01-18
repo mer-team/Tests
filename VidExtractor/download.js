@@ -30,7 +30,7 @@ validURL = async (url) => {
  * @returns {boolean} Resultado da extração, se foi ou não extraído
  */
 extractVideo = async (url, ch) => {
-	var vID = ytdl.getURLVideoID(url);
+	var vID = await ytdl.getURLVideoID(url);
 	var path = './' + vID + '.mp4'
 	var output = './' + vID + '.wav'
 	var audio = ytdl(url);
@@ -78,11 +78,11 @@ extractVideo = async (url, ch) => {
  */
 startScript = async () => {
 	console.log("Starting")
-	amqp.connect('amqp://localhost', function (error0, connection) {
+	amqp.connect('amqp://localhost', async function (error0, connection) {
 		if (error0) {
 			throw error0;
 		}
-		connection.createChannel(function (error1, channel) {
+		connection.createChannel(async function (error1, channel) {
 			if (error1) {
 				throw error1;
 			}
@@ -94,9 +94,19 @@ startScript = async () => {
 			// 	console.log(" [x] Received %s", msg.content.toString());
 			// 	var url = msg.content.toString();
 			var url = "https://www.youtube.com/watch?v=ALZHF5UqnU4";
-			var vURL = validURL(url).then(u => u)
+			var vURL = await validURL(url).then(u => u)
 			if (vURL) {
-				extractVideo(url, channel).then();
+				await extractVideo(url, channel).then();
+			} else {
+				var toSend = {
+					Service: "VidExtractor",
+					Result: "Not a music"
+				}
+
+				var queue = 'management';
+				channel.assertQueue(queue, { durable: false });
+				channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)), { persistent: false });
+				console.log(" [x] Sent '%s' to '%s", toSend, queue);
 			}
 		}, { noAck: true });
 		// });
