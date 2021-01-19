@@ -45,6 +45,17 @@ amqp.connect('amqp://localhost', function (error0, connection) {
                         };
                         channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
                         console.log(" [x] Sent %s to %s", toSend, queue);
+                        // GENRE
+                        queue = 'genre';
+                        channel.assertQueue(queue, {
+                            durable: false
+                        });
+                        var toSend = {
+                            song: result.song,
+                            artist: result.artist
+                        };
+                        channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
+                        console.log(" [x] Sent %s to %s", toSend, queue);
                     }
                     break;
                 case "SourceSeparation":
@@ -59,6 +70,9 @@ amqp.connect('amqp://localhost', function (error0, connection) {
                 case "Segmentation":
                     // TO DO - CALL FEATURE EXTRACTION
                     break;
+                case "GenreFinder":
+                    // TO DO - CALL FEATURE EXTRACTION
+                    break; 
                 case "LyricsExtractor":
                     // TO DO - CALL FEATURE EXTRACTION
                     break;
