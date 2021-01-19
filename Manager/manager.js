@@ -47,8 +47,20 @@ amqp.connect('amqp://localhost', function (error0, connection) {
                         console.log(" [x] Sent %s to %s", toSend, queue);
                     }
                     break;
-                case "Spleeter":
-                    // TO DO
+                case "SourceSeparation":
+                    var queue = 'segmentation';
+                        channel.assertQueue(queue, {
+                            durable: false
+                        });
+                        var vID = result.vID;
+                        channel.sendToQueue(queue, Buffer.from(vID));
+                        console.log(" [x] Sent %s to %s", vID, queue);
+                    break;
+                case "Segmentation":
+                    // TO DO - CALL FEATURE EXTRACTION
+                    break;
+                case "LyricsExtractor":
+                    // TO DO - CALL FEATURE EXTRACTION
                     break;
                 default:
                 // code block

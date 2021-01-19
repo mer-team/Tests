@@ -31,14 +31,14 @@ def callback(ch, method, properties, body):
     print("Elapsed time in seconds:", t1_stop-t1_start) 
 
     msg = {
-        "Service": "Spleeter",
-        "Result": vID
+        "Service": "SourceSeparation",
+        "Result": { "vID": vID }
     }
 
     channel.basic_publish(exchange='',
                         routing_key='management',
                         body=json.dumps(msg))
-    print(" [x] Sent %s" % msg)
+    print(" [x] Sent %s to management" % msg)
 
 channel.basic_consume(queue='separate',
                       auto_ack=True,

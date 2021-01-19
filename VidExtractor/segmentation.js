@@ -20,13 +20,16 @@ segmentation = async (channel, folder, audio) => {
                     console.log('An error occurred: ' + err.message);
                 })
                 .on('end', function () {
-                    // console.log('Processing finished!')
                     // true when i is the last file and audio is vocals
                     // so it just trigger once
                     if (i == nFiles && audio == "vocals") {
-                        var q = 'musicFeatures';
-                        channel.sendToQueue(q, Buffer.from(folder));
-                        console.log(" [x] Sent %s", folder);
+                        var q = 'management';
+                        var toSend = {
+                            Service: "Segmentation",
+                            Result: { "vID": folder }
+                        }
+                        channel.sendToQueue(q, Buffer.from(JSON.stringify(toSend)));
+                        console.log(" [x] Sent %s to %s", toSend, q);
                     }
                 })
                 .saveToFile(path + audio + i + ".wav");

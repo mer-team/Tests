@@ -25,15 +25,30 @@ def callback(ch, method, properties, body):
     print(" [x] Received %r" % info)
     if "song" in info and "artist" in info:
         song = genius.search_song(info['song'], info['artist'])
-    elif "song" in info:
-        song = genius.search_song(info['song'])
     else:
         song = None
 
     if song != None:
         s = song.save_lyrics(filename=info['song'], extension='txt', overwrite='true')
+        filename = info['song'] + ".txt"
+        msg = {
+            "Service": "LyricsExtractor",
+            "Result": { "Filename": filename }
+        }
+
+        channel.basic_publish(exchange='',
+                        routing_key='management',
+                        body=json.dumps(msg))
+        print(" [x] Sent %s to management" % msg)
     else:
-        print("Music Not Found")
+        msg = {
+            "Service": "LyricsExtractor",
+            "Result": { "Filename": "Music Not Found" }
+        }
+        channel.basic_publish(exchange='',
+                        routing_key='management',
+                        body=json.dumps(msg))
+        print(" [x] Sent %s to management" % msg)
 
 channel.basic_consume(queue='lyrics',
                       auto_ack=True,

@@ -47,25 +47,52 @@ extractVideo = async (url, ch) => {
 			})
 			.on('end', async function () {
 				console.log('Completed video extraction!')
+				var queue = 'management';
+				ch.assertQueue(queue, { durable: false });
 				//get video info
 				await ytdl.getBasicInfo(url).then(function (videoInfo, err) {
 					if (err) throw new Error(err);
 
 					// console.log(videoInfo.videoDetails.media)
 					var media = videoInfo.videoDetails.media;
-					var toSend = {
-						Service: "VidExtractor",
-						Result: {
-							"vID": vID,
-							"song": media.song,
-							"artist": media.artist
+					// verifica se foram encontrados os parametros do nome da musica e artista
+					if (media.song == undefined || media.artist == undefined) {
+						var title = videoInfo.videoDetails.title;
+						// verifica se o titulo segue a nomenclatura artista - nome da musica
+						if (title.includes("-")) {
+							var position = title.indexOf("-");
+							var toSend = {
+								Service: "VidExtractor",
+								Result: {
+									"vID": vID,
+									"artist": title.substring(0, position),
+									"song": title.substring(position + 1)
+								}
+							}
+							ch.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)), { persistent: false });
+							console.log(" [x] Sent %s to %s", toSend, queue);
+						} else {
+							var toSend = {
+								Service: "VidExtractor",
+								Result: {
+									"vID": vID
+								}
+							}
+							ch.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)), { persistent: false });
+							console.log(" [x] Sent %s to %s", toSend, queue);
 						}
+					} else {
+						var toSend = {
+							Service: "VidExtractor",
+							Result: {
+								"vID": vID,
+								"song": media.song,
+								"artist": media.artist
+							}
+						}
+						ch.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)), { persistent: false });
+						console.log(" [x] Sent %s to %s", toSend, queue);
 					}
-
-					var queue = 'management';
-					ch.assertQueue(queue, { durable: false });
-					ch.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)), { persistent: false });
-					console.log(" [x] Sent '%s' to '%s", toSend, queue);
 				});
 			})
 			.saveToFile(output);
@@ -106,7 +133,7 @@ startScript = async () => {
 				var queue = 'management';
 				channel.assertQueue(queue, { durable: false });
 				channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)), { persistent: false });
-				console.log(" [x] Sent '%s' to '%s", toSend, queue);
+				console.log(" [x] Sent %s to %s", toSend, queue);
 			}
 		}, { noAck: true });
 		// });
