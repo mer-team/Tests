@@ -30,7 +30,7 @@ validURL = async (url) => {
  * @returns {boolean} Resultado da extração, se foi ou não extraído
  */
 extractVideo = async (url, ch) => {
-	var vID = ytdl.getURLVideoID(url);
+	var vID = await ytdl.getURLVideoID(url);
 	var path = './' + vID + '.mp4'
 	var output = './' + vID + '.wav'
 	var audio = ytdl(url);
@@ -47,24 +47,52 @@ extractVideo = async (url, ch) => {
 			})
 			.on('end', async function () {
 				console.log('Completed video extraction!')
-				var q = 'separate';
-				ch.assertQueue(q, { durable: false });
-				ch.sendToQueue(q, Buffer.from(vID), { persistent: false });
-				console.log(" [x] Sent '%s'", vID);
+				var queue = 'management';
+				ch.assertQueue(queue, { durable: false });
 				//get video info
 				await ytdl.getBasicInfo(url).then(function (videoInfo, err) {
 					if (err) throw new Error(err);
 
 					// console.log(videoInfo.videoDetails.media)
 					var media = videoInfo.videoDetails.media;
-					var toSend = {
-						"song": media.song,
-						"artist": media.artist
+					// verifica se foram encontrados os parametros do nome da musica e artista
+					if (media.song == undefined || media.artist == undefined) {
+						var title = videoInfo.videoDetails.title;
+						// verifica se o titulo segue a nomenclatura artista - nome da musica
+						if (title.includes("-")) {
+							var position = title.indexOf("-");
+							var toSend = {
+								Service: "VidExtractor",
+								Result: {
+									"vID": vID,
+									"artist": title.substring(0, position),
+									"song": title.substring(position + 1)
+								}
+							}
+							ch.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)), { persistent: false });
+							console.log(" [x] Sent %s to %s", toSend, queue);
+						} else {
+							var toSend = {
+								Service: "VidExtractor",
+								Result: {
+									"vID": vID
+								}
+							}
+							ch.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)), { persistent: false });
+							console.log(" [x] Sent %s to %s", toSend, queue);
+						}
+					} else {
+						var toSend = {
+							Service: "VidExtractor",
+							Result: {
+								"vID": vID,
+								"song": media.song,
+								"artist": media.artist
+							}
+						}
+						ch.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)), { persistent: false });
+						console.log(" [x] Sent %s to %s", toSend, queue);
 					}
-					var queue = 'Lyrics';
-					ch.assertQueue(queue, { durable: false });
-					ch.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)), { persistent: false });
-					console.log(" [x] Sent '%s'", toSend);
 				});
 			})
 			.saveToFile(output);
@@ -77,11 +105,11 @@ extractVideo = async (url, ch) => {
  */
 startScript = async () => {
 	console.log("Starting")
-	amqp.connect('amqp://localhost', function (error0, connection) {
+	amqp.connect('amqp://localhost', async function (error0, connection) {
 		if (error0) {
 			throw error0;
 		}
-		connection.createChannel(function (error1, channel) {
+		connection.createChannel(async function (error1, channel) {
 			if (error1) {
 				throw error1;
 			}
@@ -93,9 +121,19 @@ startScript = async () => {
 			// 	console.log(" [x] Received %s", msg.content.toString());
 			// 	var url = msg.content.toString();
 			var url = "https://www.youtube.com/watch?v=ALZHF5UqnU4";
-			var vURL = validURL(url).then(u => u)
+			var vURL = await validURL(url).then(u => u)
 			if (vURL) {
-				extractVideo(url, channel).then();
+				await extractVideo(url, channel).then();
+			} else {
+				var toSend = {
+					Service: "VidExtractor",
+					Result: "Not a music"
+				}
+
+				var queue = 'management';
+				channel.assertQueue(queue, { durable: false });
+				channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)), { persistent: false });
+				console.log(" [x] Sent %s to %s", toSend, queue);
 			}
 		}, { noAck: true });
 		// });

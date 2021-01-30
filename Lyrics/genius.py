@@ -10,7 +10,7 @@ load_dotenv()
 connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
 channel = connection.channel()
 
-channel.queue_declare(queue='Lyrics')
+channel.queue_declare(queue='lyrics')
 
 API_KEY=os.environ.get("GENIUS_KEY")
 
@@ -25,17 +25,32 @@ def callback(ch, method, properties, body):
     print(" [x] Received %r" % info)
     if "song" in info and "artist" in info:
         song = genius.search_song(info['song'], info['artist'])
-    elif "song" in info:
-        song = genius.search_song(info['song'])
     else:
         song = None
 
     if song != None:
         s = song.save_lyrics(filename=info['song'], extension='txt', overwrite='true')
-    else:
-        print("Not Found")
+        filename = info['song'] + ".txt"
+        msg = {
+            "Service": "LyricsExtractor",
+            "Result": { "Filename": filename }
+        }
 
-channel.basic_consume(queue='Lyrics',
+        channel.basic_publish(exchange='',
+                        routing_key='management',
+                        body=json.dumps(msg))
+        print(" [x] Sent %s to management" % msg)
+    else:
+        msg = {
+            "Service": "LyricsExtractor",
+            "Result": { "Filename": "Music Not Found" }
+        }
+        channel.basic_publish(exchange='',
+                        routing_key='management',
+                        body=json.dumps(msg))
+        print(" [x] Sent %s to management" % msg)
+
+channel.basic_consume(queue='lyrics',
                       auto_ack=True,
                       on_message_callback=callback)
 
