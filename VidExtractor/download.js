@@ -5,7 +5,7 @@ var amqp = require('amqplib/callback_api');
 
 
 /** 
- * Verifica se o URL fornecido está num formato válido aceite pelo Youtube 
+ * Verifica se o URL fornecido está num formato válido aceite pelo Youtube e verifica a sua categoria
  * @param {string} url URL fornecido
  * @returns {boolean}
 */
@@ -25,9 +25,9 @@ validURL = async (url) => {
 }
 
 /**
- * Extrai o vídeo correspondente ao URL fornecido
+ * Extrai o vídeo correspondente ao URL fornecido e obtem alguns metadados
  * @param {string} url URL fornecido
- * @returns {boolean} Resultado da extração, se foi ou não extraído
+ * @param {amqp.Channel} ch ligação ao broker
  */
 extractVideo = async (url, ch) => {
 	var vID = await ytdl.getURLVideoID(url);
@@ -101,10 +101,9 @@ extractVideo = async (url, ch) => {
 
 
 /**
- * Inicializa todos os métodos necessários para a validação, extração e conversão de um vídeo para versão áudio
+ * Inicia uma ligação ao broker e fica à espera de mensagens para validar/descarregar um vídeo
  */
 startScript = async () => {
-	console.log("Starting")
 	amqp.connect('amqp://localhost', async function (error0, connection) {
 		if (error0) {
 			throw error0;
@@ -121,8 +120,10 @@ startScript = async () => {
 			// 	console.log(" [x] Received %s", msg.content.toString());
 			// 	var url = msg.content.toString();
 			var url = "https://www.youtube.com/watch?v=ALZHF5UqnU4";
+			// verifica se o vídeo é da categoria música
 			var vURL = await validURL(url).then(u => u)
 			if (vURL) {
+				// extração do vídeo
 				await extractVideo(url, channel).then();
 			} else {
 				var toSend = {
