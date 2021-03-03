@@ -3,7 +3,7 @@ from pydub import AudioSegment
 
 # quadrants
 dataset = "/vagrant/dataset/"
-output = "/vagrant/datasetWav/"
+output = "/vagrant/datasetWav"
 counter = 1
 
 for folder in os.listdir(dataset):
