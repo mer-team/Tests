@@ -64,7 +64,7 @@ for key in features.descriptorNames():
         out.write('%s;' % key)
 
 txt = "quadrant"
-out.write('%s;' % txt)
+out.write('%s' % txt)
 out.write("\n")
 
 ##################################
@@ -130,7 +130,7 @@ for source in os.listdir(dataset):
                     out.write('%f;' % features[key])
             # quadrant = Q1 / Q2 ...
             txt = quadrant[1:]
-            out.write('%s;' % txt)
+            out.write('%s' % txt)
             out.write("\n")
             print('Music number: %s' % musicNumber)
             musicNumber = musicNumber + 1
