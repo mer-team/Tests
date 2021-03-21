@@ -15,3 +15,8 @@ sudo apt-get -y install nodejs
 
 echo "Install ffmpeg for Spleeter and ffmpeg******"
 sudo apt-get -y install ffmpeg
+
+echo "Install Java******"
+sudo add-apt-repository ppa:linuxuprising/java -y
+sudo apt update
+sudo apt install oracle-java15-set-default

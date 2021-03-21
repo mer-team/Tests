@@ -288,4 +288,6 @@ pretrained_models/
 
 datasetFeatures/
 
+Lyrics_dataset/
+
 # End of https://www.toptal.com/developers/gitignore/api/linux,python,dotenv,node,vagrant
