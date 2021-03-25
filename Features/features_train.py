@@ -78,7 +78,7 @@ output = "/vagrant/datasetFeatures/"
 
 musicNumber = 1
 
-for source in os.listdir(dataset):
+for source in sorted(os.listdir(dataset)):
     # create folders for different sources
     dir = output + source + "/"
     try:
@@ -88,7 +88,7 @@ for source in os.listdir(dataset):
     else:
         print ("Successfully created the directory %s " % dir)
 
-    for quadrant in os.listdir(dataset + source):
+    for quadrant in sorted(os.listdir(dataset + source)):
         # create folders for different quadrants
         quadrantFolder = dir + quadrant + "/"
         try:
@@ -98,39 +98,42 @@ for source in os.listdir(dataset):
         else:
             print ("Successfully created the directory %s " % quadrantFolder)
 
-        for audio in os.listdir(dataset + source + "/" + quadrant):
+        for audio in sorted(os.listdir(dataset + source + "/" + quadrant)):
+            try:
+                features, features_frames = es.MusicExtractor(lowlevelStats=lst,
+                                                            rhythmStats=lst,
+                                                            tonalStats=lst,
+                                                            mfccStats=lst,
+                                                            gfccStats=lst)(dataset + source + "/" + quadrant + "/" + audio)   
 
-            features, features_frames = es.MusicExtractor(lowlevelStats=lst,
-                                                        rhythmStats=lst,
-                                                        tonalStats=lst,
-                                                        mfccStats=lst,
-                                                        gfccStats=lst)(dataset + source + "/" + quadrant + "/" + audio)   
+                separation = audio.find(".")
+                songName = audio[0:separation]                                          
 
-            separation = audio.find(".")
-            songName = audio[0:separation]                                          
+                es.YamlOutput(filename = quadrantFolder + "/" + songName + ".json", format = 'json')(features)
 
-            es.YamlOutput(filename = quadrantFolder + "/" + songName + ".json", format = 'json')(features)
-
-            for key in features.descriptorNames():
-                if "metadata" in key:
-                    continue
-                elif "rhythm.beats_position" in key:
-                    continue
-                elif "rhythm.bpm_histogram" in key:
-                    continue
-                elif isinstance(features[key], numpy.ndarray):
-                    for value in features[key]:
-                        out.write('%f;' % value)
-                elif isinstance(features[key], str):
-                    if "scale" in key:
-                        out.write('%f;' % scaleNotation(features[key]))
+                for key in features.descriptorNames():
+                    if "metadata" in key:
+                        continue
+                    elif "rhythm.beats_position" in key:
+                        continue
+                    elif "rhythm.bpm_histogram" in key:
+                        continue
+                    elif isinstance(features[key], numpy.ndarray):
+                        for value in features[key]:
+                            out.write('%f;' % value)
+                    elif isinstance(features[key], str):
+                        if "scale" in key:
+                            out.write('%f;' % scaleNotation(features[key]))
+                        else:
+                            out.write('%f;' % keyNotation(features[key]))
                     else:
-                        out.write('%f;' % keyNotation(features[key]))
-                else:
-                    out.write('%f;' % features[key])
-            # quadrant = Q1 / Q2 ...
-            txt = quadrant[1:]
-            out.write('%s' % txt)
-            out.write("\n")
-            print('Music number: %s' % musicNumber)
-            musicNumber = musicNumber + 1
+                        out.write('%f;' % features[key])
+                # quadrant = Q1 / Q2 ...
+                txt = quadrant[1:]
+                out.write('%s' % txt)
+                out.write("\n")
+                print('Music number: %s' % musicNumber)
+                musicNumber = musicNumber + 1
+
+            except:
+                print("silent file")
