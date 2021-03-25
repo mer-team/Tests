@@ -15,7 +15,7 @@ features_original = csvFile.iloc[:,4034:(8068)].copy()
 features_vocals = csvFile.iloc[:,8068:].copy()
 
 # NAN AND INF **************************************
-# features_null = features.isnull().sum().sort_values(ascending = False) # check number of NAN values per column | max registered was 18
+# features_null = features_accompaniment.isnull().sum().sort_values(ascending = False) # check number of NAN values per column | max registered was 18
 # # features_null.to_csv('./features_null.csv', mode='w')
 
 # features_inf = np.isinf(features).sum().sort_values(ascending = False) # check number of inf values per column | max registered was 1304
@@ -63,7 +63,7 @@ features_vocals = csvFile.iloc[:,8068:].copy()
 # index_plot = []
 # counter = 1
 # for feat in features_null.index:
-#     value = (features_null[feat] * 100) / 900
+#     value = (features_null[feat] * 100) / 900 # 900 musics - 100% | features_null[feat] musics- x %
 #     values.append(value)
 #     index_plot.append(feat)
 #     if features_null[feat] == 0:
@@ -72,33 +72,19 @@ features_vocals = csvFile.iloc[:,8068:].copy()
 # x = np.arange(len(index_plot))  # the label locations
 # width = 0.5  # the width of the bars
 # fig, ax = plt.subplots()
-# bars = ax.barh(x, values, width, linewidth = 0)
-
-# # ax.set_ylabel('Number of NAN')
-# # ax.set_xlabel('Accompaniment Features')
+# bars = ax.barh(x, values, width, linewidth = 0, color=(0.2, 0.4, 0.6, 0.6))
+# ax.invert_yaxis() # invert y axis to show lowest value below
+# plt.xlim(0,np.max(values)*1.2) # change outside rect width - limit x
 # ax.set_yticks(x)
-# ax.set_yticklabels(index_plot)
+# ax.set_yticklabels(index_plot, minor=False)
 # # ax.invert_yaxis()  # labels read top-to-bottom
 # ax.xaxis.set_visible(False)
 # ax.set_title('Number of NAN per features_accompaniment')
 # # plt.legend()
+# for i, v in enumerate(values):
+#     ax.text(v, i , " {:.2f}".format(float(v)) + " %",va='center', color="blue", fontweight='bold')
 
-
-# def autolabel(rects):
-#     """Attach a text label above each bar in *rects*, displaying its height."""
-#     for rect in rects:
-#         height = rect.get_height()
-#         ax.annotate('{:.0%}'.format(height),
-#                     xy=(rect.get_x() + rect.get_width() / 2, height),
-#                     xytext=(0, 3),  # 3 points vertical offset
-#                     textcoords="offset points",
-#                     ha='center', va='bottom')
-
-# autolabel(bars)
-
-# fig.tight_layout()
-
-# fig.savefig('null_features.png')
+# plt.savefig('null_features.png', format='png', bbox_inches='tight') # use format='svg' or 'pdf' for vectorial pictures
 
 # import os
 # import numpy as np
