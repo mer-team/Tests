@@ -10,25 +10,28 @@ import matplotlib.pyplot as plt
 csvFile = pd.read_csv('./features_new.csv', sep = ";", index_col=False)
 targets = csvFile['quadrant']
 csvFile = csvFile.drop(['quadrant', 'music.name'], axis=1)
-features_accompaniment = csvFile.iloc[:,0:4034].copy()
-features_original = csvFile.iloc[:,4034:(8068)].copy()
-features_vocals = csvFile.iloc[:,8068:].copy()
+features = csvFile.replace([np.inf, -np.inf], np.nan)
+# features_accompaniment = features.iloc[:,0:4034].copy()
+# features_original = features.iloc[:,4034:(8068)].copy()
+features_vocals = features.iloc[:,8068:].copy()
+
+# GENERATE MIN VALUES FOR FEATURES_VOCALS WHERE MUSIC IS SILENT
+# min = features_vocals.min()
+# min = pd.DataFrame(min).T # TO ROW
+# min.to_csv('./min_vocals.csv', mode='w', index = False, header = False)
 
 # NAN AND INF **************************************
-# features_null = features_accompaniment.isnull().sum().sort_values(ascending = False) # check number of NAN values per column | max registered was 18
-# # features_null.to_csv('./features_null.csv', mode='w')
-
-# features_inf = np.isinf(features).sum().sort_values(ascending = False) # check number of inf values per column | max registered was 1304
+features_null = features_vocals.isnull().sum().sort_values(ascending = False) # check number of NAN values per column | max registered was 18
+print(features_null)
 
 # # STANDARD DEVIATION  ***********************************************************************
-# std = features.std().sort_values()
-# counter = 0
+# std = csvFile.std().sort_values()
 # to_drop = []
 # for feature in std.index:
 #     if std[feature] == 0:
 #         to_drop.append(feature)
 # df = features.drop(to_drop, axis=1)
-# # print(df)
+# print(df)
 
 # df_correlation = df.corr().abs()
 
@@ -79,73 +82,9 @@ features_vocals = csvFile.iloc[:,8068:].copy()
 # ax.set_yticklabels(index_plot, minor=False)
 # # ax.invert_yaxis()  # labels read top-to-bottom
 # ax.xaxis.set_visible(False)
-# ax.set_title('Number of NAN per features_accompaniment')
+# ax.set_title('Number of NAN on features_vocals')
 # # plt.legend()
 # for i, v in enumerate(values):
 #     ax.text(v, i , " {:.2f}".format(float(v)) + " %",va='center', color="blue", fontweight='bold')
 
 # plt.savefig('null_features.png', format='png', bbox_inches='tight') # use format='svg' or 'pdf' for vectorial pictures
-
-# import os
-# import numpy as np
-# import matplotlib.pyplot as plt
-
-# x = [u'INFO', u'CUISINE', u'TYPE_OF_PLACE', u'DRINK', u'PLACE', u'MEAL_TIME', u'DISH', u'NEIGHBOURHOOD']
-# y = [160, 167, 137, 18, 120, 36, 155, 130]
-
-# fig, ax = plt.subplots()    
-# width = 0.75 # the width of the bars 
-# ind = np.arange(len(y))  # the x locations for the groups
-# ax.barh(ind, y, width, color="blue")
-# ax.set_yticks(ind+width/2)
-# ax.set_yticklabels(x, minor=False)
-# plt.title('title')
-# plt.xlabel('x')
-# plt.ylabel('y')      
-
-# for i, v in enumerate(y):
-#     ax.text(v + 3, i , str(v) + " %",va='center', color='blue', fontweight='bold')
-# #plt.show()
-# plt.savefig(os.path.join('test.png'), dpi=300, format='png', bbox_inches='tight') # use format='svg' or 'pdf' for vectorial pictures
-
-
-# ****************************PLOT INF****************************
-# values = []
-# index_plot = []
-# counter = 1
-# for feat in features_inf.index:
-#     values.append(features_inf[feat])
-#     index_plot.append(feat)
-#     if features_inf[feat] == 0:
-#         break
-#     counter += 1
-# x = np.arange(len(index_plot))  # the label locations
-# width = 0.4  # the width of the bars
-# fig, ax = plt.subplots()
-
-# bars = ax.bar(x, values, width)
-
-# ax.set_ylabel('Number of inf')
-# ax.set_xlabel('Features')
-# ax.set_xticks(x)
-# ax.set_xticklabels(index_plot, rotation ='vertical',fontsize=7)
-# ax.set_title('Number of inf per feature')
-# # plt.legend()
-
-# def autolabel(rects):
-#     """Attach a text label above each bar in *rects*, displaying its height."""
-#     counter = 1
-#     for rect in rects:
-#         if (counter % 2) == 1:
-#             height = rect.get_height()
-#             ax.annotate('{}'.format(height),
-#                         xy=(rect.get_x() + rect.get_width() / 2, height),
-#                         xytext=(0, 1),  # 1 points vertical offset
-#                         textcoords="offset points",
-#                         ha='center', va='bottom')
-#         counter += 1
-# autolabel(bars)
-
-# fig.tight_layout()
-
-# fig.savefig('inf_features_bars.png')
