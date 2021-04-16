@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.feature_selection import SelectKBest, chi2, f_classif
 from sklearn import preprocessing
 
+
 csvFile = pd.read_csv('./features_without_null.csv', sep = ";", index_col=False)
 targets = csvFile['quadrant']
 csvFile = csvFile.drop(['quadrant', 'music.name'], axis=1)
@@ -67,7 +68,7 @@ to_drop = [column for column in matrix.columns if any(matrix[column] > 0.7)]
 csvFile = csvFile.drop(to_drop, axis=1)
 print(csvFile) # features 1000
 
-# csvFile.to_csv('./features_correlation.csv', mode='w')
+csvFile.to_csv('./features_after_correlation.csv', mode='w', sep=';', index = False)
 
 
 # # ***********************************PLOTS*******************************
