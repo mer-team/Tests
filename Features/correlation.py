@@ -30,7 +30,7 @@ data_clean = csvFile[~((csvFile < (Q1-1.5*IQR)) | (csvFile > (Q3+1.5*IQR)))]
 var = data_clean.var().sort_values()
 to_drop = []
 for feature in var.index:
-    if var[feature] == 0:
+    if var[feature] < 0.0000001:
         to_drop.append(feature)
 csvFile = csvFile.drop(to_drop, axis=1)
 
