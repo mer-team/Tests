@@ -1,3 +1,4 @@
-essentia
-pika
+pandas
+scikit-learn
+matplotlib
 seaborn
