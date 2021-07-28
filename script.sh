@@ -16,7 +16,8 @@ sudo apt-get -y install nodejs
 echo "Install ffmpeg for Spleeter and ffmpeg******"
 sudo apt-get -y install ffmpeg
 
-echo "Install Java******"
-sudo add-apt-repository ppa:linuxuprising/java -y
-sudo apt update
-sudo apt install oracle-java15-set-default
+echo "Install MongoDB******"
+wget -qO - https://www.mongodb.org/static/pgp/server-5.0.asc | sudo apt-key add -
+echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/5.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-5.0.list
+sudo apt-get update
+sudo apt-get install -y mongodb
