@@ -31,7 +31,7 @@ segmentation = async (channel, vID, audio) => {
                         console.log(" [x] Sent %s to %s", toSend, q);
                     }
                 })
-                .saveToFile(path + audio + i + ".wav");
+                .saveToFile(path + audio + "_" + i + ".wav");
 
             inputSec = inputSec + 15;
         }

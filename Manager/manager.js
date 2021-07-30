@@ -1,4 +1,8 @@
 var amqp = require('amqplib/callback_api');
+const fs = require('fs');
+const { orderBy } = require('natural-orderby');
+// path onde estao as musicas segmentadas
+var path = '/vagrant/SourceSeparation/Spleeter/Output/'
 
 amqp.connect('amqp://localhost', function (error0, connection) {
     if (error0) {
@@ -21,6 +25,12 @@ amqp.connect('amqp://localhost', function (error0, connection) {
 
             var service = body.Service;
             var result = body.Result;
+            if (service == undefined || result == undefined) {
+                body = body.replace(/'/g, '"');
+                body = JSON.parse(body);
+                service = body.Service;
+                result = body.Result;
+            }
             switch (service) {
                 case "VidExtractor":
                     if (result == "Not a music") {
@@ -60,19 +70,48 @@ amqp.connect('amqp://localhost', function (error0, connection) {
                     break;
                 case "SourceSeparation":
                     var queue = 'segmentation';
+                    channel.assertQueue(queue, {
+                        durable: false
+                    });
+                    var vID = result.vID;
+                    channel.sendToQueue(queue, Buffer.from(vID));
+                    console.log(" [x] Sent %s to %s", vID, queue);
+                    break;
+                case "Segmentation":
+                    // read directory
+                    let files = orderBy(fs.readdirSync(path + result.vID))
+                    for (let index = 0; index < files.length; index++) {
+                        const file = files[index];
+                        // discard accompaniment, original, vocals
+                        if (!file.includes("_")) {
+                            continue
+                        }
+                        let relativedir = result.vID + "/" + file;
+                        let pos = file.indexOf("_");
+                        var queue = 'musicFeatures';
                         channel.assertQueue(queue, {
                             durable: false
                         });
-                        var vID = result.vID;
-                        channel.sendToQueue(queue, Buffer.from(vID));
-                        console.log(" [x] Sent %s to %s", vID, queue);
+                        var toSend = {
+                            vID: result.vID,
+                            path: relativedir,
+                            source: file.substring(0, pos)
+                        }
+                        channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
+                        console.log(" [x] Sent %s to %s", toSend, queue);
+                    }
                     break;
-                case "Segmentation":
-                    // TO DO - CALL FEATURE EXTRACTION
-                    break;
+                case "AudioFeaturesExtractor":
+                    if (result.error != undefined) {
+                        console.log(result.error)
+                        // TODO
+                    } else {
+                        // TODO
+                        console.log("not error")
+                    }
                 case "GenreFinder":
                     // TO DO - CALL FEATURE EXTRACTION
-                    break; 
+                    break;
                 case "LyricsExtractor":
                     // TO DO - CALL FEATURE EXTRACTION
                     break;
