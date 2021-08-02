@@ -25,7 +25,7 @@ segmentation = async (channel, vID, audio) => {
                         var q = 'management';
                         var toSend = {
                             Service: "Segmentation",
-                            Result: { "vID": vID }
+                            Result: { "vID": vID, "numFiles": nFiles }
                         }
                         channel.sendToQueue(q, Buffer.from(JSON.stringify(toSend)));
                         console.log(" [x] Sent %s to %s", toSend, q);

@@ -33,7 +33,7 @@ def callback(ch, method, properties, body):
         filename = info['song'] + ".txt"
         msg = {
             "Service": "LyricsExtractor",
-            "Result": { "Filename": filename }
+            "Result": { "Filename": filename, "Lyrics": str(song), "videoID": info['vID'] }
         }
 
         channel.basic_publish(exchange='',
@@ -43,7 +43,7 @@ def callback(ch, method, properties, body):
     else:
         msg = {
             "Service": "LyricsExtractor",
-            "Result": { "Filename": "Music Not Found" }
+            "Result": { "Filename": "Music Not Found", "videoID": info['vID'] }
         }
         channel.basic_publish(exchange='',
                         routing_key='management',

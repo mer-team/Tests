@@ -119,6 +119,7 @@ startScript = async () => {
 			// ch.consume(q, async function (msg) {
 			// 	console.log(" [x] Received %s", msg.content.toString());
 			// 	var url = msg.content.toString();
+			// https://www.youtube.com/watch?v=UN6wWphtRpk
 			var url = "https://www.youtube.com/watch?v=ALZHF5UqnU4";
 			// verifica se o vídeo é da categoria música
 			var vURL = await validURL(url).then(u => u)

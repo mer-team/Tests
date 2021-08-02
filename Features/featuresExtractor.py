@@ -67,16 +67,19 @@ def callback(ch, method, properties, body):
             elif isinstance(features[key], numpy.ndarray):
                 counter = 1
                 for value in features[key]:
-                    txt = key + "[" + str(counter) + '.' + body['source']
+                    key1 = key.replace('.', '_')
+                    txt = key1 + "[" + str(counter) + ']_' + body['source']
                     featExtracted[txt] = value
                     counter = counter + 1
             elif isinstance(features[key], str):
+                key1 = key.replace('.', '_')
                 if "scale" in key:
-                    featExtracted[key + '.' + body['source']] = scaleNotation(features[key])
+                    featExtracted[key1 + '_' + body['source']] = scaleNotation(features[key])
                 else:
-                    featExtracted[key + '.' + body['source']] = keyNotation(features[key])
+                    featExtracted[key1 + '_' + body['source']] = keyNotation(features[key])
             else:
-                featExtracted[key + '.' + body['source']] = features[key]
+                key1 = key.replace('.', '_')
+                featExtracted[key1 + '_' + body['source']] = features[key]
                 
         toSend = {
             "Service": "AudioFeaturesExtractor",
@@ -89,7 +92,7 @@ def callback(ch, method, properties, body):
         channel.basic_publish(exchange='',
                         routing_key='management',
                         body=json.dumps(str(toSend)))
-        print(" [x] Sent ", json.dumps(str(toSend)), " to Manager!!")
+        print(" [x] Sent ", "Features", " to Manager!!")
 
     except Exception as error:
         print(error)
