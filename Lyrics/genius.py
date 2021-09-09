@@ -24,6 +24,7 @@ def callback(ch, method, properties, body):
     info = json.loads(body.decode('utf-8'))
     print(" [x] Received %r" % info)
     if "song" in info and "artist" in info:
+        # if unable to get lyrics the song = None
         song = genius.search_song(info['song'], info['artist'])
     else:
         song = None

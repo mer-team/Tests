@@ -8,7 +8,7 @@ connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
 channel = connection.channel()
 
 channel.queue_declare(queue='musicFeatures')
-channel.queue_declare(queue='classifyMusic')
+channel.queue_declare(queue='management')
 
 # https://stackoverflow.com/questions/60208/replacements-for-switch-statement-in-python?page=1&tab=votes#tab-top
 def scaleNotation(x):
@@ -80,13 +80,13 @@ def callback(ch, method, properties, body):
             else:
                 key1 = key.replace('.', '_')
                 featExtracted[key1 + '_' + body['source']] = features[key]
-                
         toSend = {
             "Service": "AudioFeaturesExtractor",
             "Result": { 
                 "featExtracted": featExtracted,
                 "source": body['source'],
-                "vID": body['vID']
+                "vID": body['vID'],
+                "last": body['last']
             }
         }
         channel.basic_publish(exchange='',
@@ -99,7 +99,10 @@ def callback(ch, method, properties, body):
         toSend = {
             "Service": "AudioFeaturesExtractor",
             "Result": { 
-                "error": "error occurred or file might be silent"
+                "error": "error occurred or file might be silent",
+                "vID": body['vID'],
+                "source": body['source'],
+                "last": body['last']
             }
         }
         channel.basic_publish(exchange='',

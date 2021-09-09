@@ -41,131 +41,226 @@ run = async () => {
 
             console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", queue);
             channel.consume(queue, async function (msg) {
-                var body = JSON.parse(msg.content);
-                if (typeof body == 'string') {
-                    console.log(" [x] Received Features")
-                } else {
-                    console.log(" [x] Received %s", body);
-                }
-                var service = body.Service;
-                var result = body.Result;
-                if (service == undefined || result == undefined) {
-                    body = body.replace(/'/g, '"');
-                    body = JSON.parse(body);
-                    service = body.Service;
-                    result = body.Result;
-                }
-                switch (service) {
-                    case "VidExtractor":
-                        if (result == "Not a music") {
-                            console.log("Not Music. Ending!")
-                        } else {
-                            // INSERT ONE DOCUMENT INTO DB
-                            const doc = {
-                                videoID: result.vID, song: result.song, artist: result.artist,
-                                accompaniment: [], original: [], vocals: []
-                            };
-                            await collection.insertOne(doc).then(res => res = res);
+                try {
 
-                            // SOURCE SEPARATION
-                            var queue = 'separate';
+
+                    var body = JSON.parse(msg.content);
+                    if (typeof body == 'string') {
+                        console.log(" [x] Received Features")
+                    } else {
+                        console.log(" [x] Received %s", body);
+                    }
+                    var service = body.Service;
+                    var result = body.Result;
+                    if (service == undefined || result == undefined) {
+                        body = body.replace(/'/g, '"');
+                        body = JSON.parse(body);
+                        service = body.Service;
+                        result = body.Result;
+                    }
+                    switch (service) {
+                        case "VidExtractor":
+                            if (result == "Not a music") {
+                                console.log("Not Music. Ending!")
+                            } else {
+                                // INSERT ONE DOCUMENT INTO DB
+                                const doc = {
+                                    videoID: result.vID, song: result.song, artist: result.artist,
+                                    accompaniment: [], original: [], vocals: [], emotions_accompaniment: [],
+                                    emotions_original: [], emotions_vocals: [], emotions_allaudio: []
+                                };
+                                await collection.insertOne(doc).then(res => res = res);
+
+                                // SOURCE SEPARATION
+                                var queue = 'separate';
+                                channel.assertQueue(queue, {
+                                    durable: false
+                                });
+                                var vID = result.vID;
+                                channel.sendToQueue(queue, Buffer.from(vID));
+                                console.log(" [x] Sent %s to %s", vID, queue);
+                                // LYRICS
+                                queue = 'lyrics';
+                                channel.assertQueue(queue, {
+                                    durable: false
+                                });
+                                var toSend = {
+                                    song: result.song,
+                                    artist: result.artist,
+                                    vID: result.vID
+                                };
+                                channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
+                                console.log(" [x] Sent %s to %s", toSend, queue);
+                                // GENRE
+                                queue = 'genre';
+                                channel.assertQueue(queue, {
+                                    durable: false
+                                });
+                                var toSend = {
+                                    song: result.song,
+                                    artist: result.artist,
+                                    vID: result.vID
+                                };
+                                channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
+                                console.log(" [x] Sent %s to %s", toSend, queue);
+                            }
+                            break;
+                        case "SourceSeparation":
+                            var queue = 'segmentation';
                             channel.assertQueue(queue, {
                                 durable: false
                             });
                             var vID = result.vID;
                             channel.sendToQueue(queue, Buffer.from(vID));
                             console.log(" [x] Sent %s to %s", vID, queue);
-                            // LYRICS
-                            queue = 'lyrics';
-                            channel.assertQueue(queue, {
-                                durable: false
-                            });
-                            var toSend = {
-                                song: result.song,
-                                artist: result.artist,
-                                vID: result.vID
-                            };
-                            channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
-                            console.log(" [x] Sent %s to %s", toSend, queue);
-                            // GENRE
-                            queue = 'genre';
-                            channel.assertQueue(queue, {
-                                durable: false
-                            });
-                            var toSend = {
-                                song: result.song,
-                                artist: result.artist,
-                                vID: result.vID
-                            };
-                            channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
-                            console.log(" [x] Sent %s to %s", toSend, queue);
-                        }
-                        break;
-                    case "SourceSeparation":
-                        var queue = 'segmentation';
-                        channel.assertQueue(queue, {
-                            durable: false
-                        });
-                        var vID = result.vID;
-                        channel.sendToQueue(queue, Buffer.from(vID));
-                        console.log(" [x] Sent %s to %s", vID, queue);
-                        break;
-                    case "Segmentation":
-                        let numFiles = { $set: { numFiles: result.numFiles } };
-                        await collection.updateOne({ videoID: result.vID }, numFiles);
-                        // read directory
-                        let files = orderBy(fs.readdirSync(path + result.vID))
-                        for (let index = 0; index < files.length; index++) {
-                            const file = files[index];
-                            // discard accompaniment, original, vocals
-                            if (!file.includes("_")) {
-                                continue
+                            break;
+                        case "Segmentation":
+                            let numFiles = { $set: { numFiles: result.numFiles } };
+                            await collection.updateOne({ videoID: result.vID }, numFiles);
+                            // read directory
+                            let files = orderBy(fs.readdirSync(path + result.vID))
+                            for (let index = 0; index < files.length; index++) {
+                                const file = files[index];
+                                // discard accompaniment, original, vocals
+                                if (!file.includes("_")) {
+                                    continue
+                                }
+                                let relativedir = result.vID + "/" + file;
+                                let pos = file.indexOf("_");
+                                var queue = 'musicFeatures';
+                                channel.assertQueue(queue, {
+                                    durable: false
+                                });
+                                if (index != (files.length - 1)) {
+                                    var toSend = {
+                                        vID: result.vID,
+                                        path: relativedir,
+                                        source: file.substring(0, pos),
+                                        last: 'False'
+                                    }
+                                } else {
+                                    var toSend = {
+                                        vID: result.vID,
+                                        path: relativedir,
+                                        source: file.substring(0, pos),
+                                        last: 'True'
+                                    }
+                                }
+                                channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
                             }
-                            let relativedir = result.vID + "/" + file;
-                            let pos = file.indexOf("_");
-                            var queue = 'musicFeatures';
-                            channel.assertQueue(queue, {
-                                durable: false
-                            });
-                            var toSend = {
-                                vID: result.vID,
-                                path: relativedir,
-                                source: file.substring(0, pos)
-                            }
-                            channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
-                        }
-                        console.log(" [x] Sent %s to %s", "Segmented files", queue);
-                        break;
-                    case "AudioFeaturesExtractor":
-                        if (result.error != undefined) {
-                            console.log(result.error)
-                            // TODO
-                        } else {
+                            console.log(" [x] Sent %s to %s", "Segmented files", queue);
+                            break;
+                        case "AudioFeaturesExtractor":
                             let query = {}
-                            query[result.source] = result.featExtracted;
+                            if (result.error != undefined) {
+                                console.log(result.error)
+                                query[result.source] = result.error;
+                                // TODO IN CASE OF ERROR / SILENT FILE
+                            } else {
+                                query[result.source] = result.featExtracted;
+                            }
                             let append = { $push: query };
                             await collection.findOneAndUpdate({ videoID: result.vID }, append);
-                        }
-                    case "GenreFinder":
-                        // UPDATE DOCUMENT
-                        let genre = { $set: { genre: result.Result } };
-                        await collection.updateOne({ videoID: result.videoID }, genre);
-                        break;
-                    case "LyricsExtractor":
-                        if (result.Filename == "Music Not Found") {
+
+                            if (result.last == 'True') {
+                                // get all features to classify
+                                let musicRecord;
+                                await collection.findOne({ videoID: result.vID }).then(res => musicRecord = res);
+                                // example 
+                                // {
+                                //     videoID: 'ALZHF5UqnU4',
+                                //     song: 'Alone',
+                                //     artist: 'Marshmello',
+                                //     accompaniment: [],
+                                //     original: [],
+                                //     vocals: [],
+                                //     numFiles: 14
+                                //   }
+                                let numFiles = musicRecord.numFiles;
+                                var queue = 'classifyMusic';
+                                channel.assertQueue(queue, {
+                                    durable: false
+                                });
+                                var toSend = {};
+                                for (let index = 0; index < numFiles; index++) {
+                                    // classify accompaniment, original, vocal, allcombined
+                                    // accompaniment
+                                    toSend = {
+                                        vID: result.vID,
+                                        features: musicRecord.accompaniment[index],
+                                        source: 'emotions_accompaniment'
+                                    }
+
+                                    channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
+                                    console.log(" [x] Sent %s to %s", `Features of accompaniment[${index}]`, queue);
+                                    // original
+                                    toSend = {
+                                        vID: result.vID,
+                                        features: musicRecord.original[index],
+                                        source: 'emotions_original'
+                                    }
+                                    channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
+                                    console.log(" [x] Sent %s to %s", `Features of original[${index}]`, queue);
+                                    // vocals
+                                    toSend = {
+                                        vID: result.vID,
+                                        features: musicRecord.vocals[index],
+                                        source: 'emotions_vocals'
+                                    }
+                                    channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
+                                    console.log(" [x] Sent %s to %s", `Features of vocals[${index}]`, queue);
+                                    // allcombined
+                                    if (typeof musicRecord.accompaniment[index] == 'string' ||
+                                        typeof musicRecord.original[index] == 'string' ||
+                                        typeof musicRecord.vocals[index] == 'string') {
+                                        toSend = {
+                                            vID: result.vID,
+                                            features: "error",
+                                            source: 'emotions_allaudio'
+                                        }
+                                    } else {
+                                        const merged = Object.assign({}, musicRecord.accompaniment[index],
+                                            musicRecord.original[index], musicRecord.vocals[index])
+                                        toSend = {
+                                            vID: result.vID,
+                                            features: merged,
+                                            source: 'emotions_allaudio'
+                                        }
+                                    }
+                                    channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
+                                    console.log(" [x] Sent %s to %s", `Features of vocals[${index}]`, queue);
+                                }
+                            }
+                            break;
+                        case "GenreFinder":
                             // UPDATE DOCUMENT
-                            let lyrics = { $set: { lyrics: result.Filename } };
-                            await collection.updateOne({ videoID: result.videoID }, lyrics)
-                            // TO DO - END?
-                        } else {
-                            // UPDATE DOCUMENT 
-                            let lyrics = { $set: { lyrics: result.Lyrics } };
-                            await collection.updateOne({ videoID: result.videoID }, lyrics);
-                            // TO DO - CALL FEATURE EXTRACTION
-                        }
-                        break;
-                    default:
-                    // code block
+                            let genre = { $set: { genre: result.Result } };
+                            await collection.updateOne({ videoID: result.videoID }, genre);
+                            break;
+                        case "LyricsExtractor":
+                            if (result.Filename == "Music Not Found") {
+                                // UPDATE DOCUMENT
+                                let lyrics = { $set: { lyrics: result.Filename } };
+                                await collection.updateOne({ videoID: result.videoID }, lyrics)
+                                // TO DO - END?
+                            } else {
+                                // UPDATE DOCUMENT 
+                                let lyrics = { $set: { lyrics: result.Lyrics } };
+                                await collection.updateOne({ videoID: result.videoID }, lyrics);
+                                // TO DO - CALL FEATURE EXTRACTION
+                            }
+                            break;
+                        case "Classifier":
+                            let queryClassifier = {}
+                            queryClassifier[result.source] = result.emotion;
+                            let appendClassifier = { $push: queryClassifier };
+                            await collection.findOneAndUpdate({ videoID: result.vID }, appendClassifier);
+                            break;
+                        default:
+                        // code block
+                    }
+                } catch (error) {
+                    console.log(error)
                 }
             }, {
                 noAck: true
