@@ -8,8 +8,8 @@ Vagrant.configure("2") do |config|
 
   config.vm.provider "virtualbox" do |v|
     v.name = "Tests"
-    v.memory = "4096"
-    v.cpus = 2
+    v.memory = "6000"
+    v.cpus = 4
   end
 
   config.vm.provision "shell", path: "script.sh"

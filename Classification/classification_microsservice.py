@@ -8,6 +8,8 @@ channel = connection.channel()
 channel.queue_declare(queue='classifyMusic')
 channel.queue_declare(queue='management')
 
+classifiers_path = './classifiers/'
+
 print(' [*] Waiting for messages. To exit press CTRL+C')
 
 def callback(ch, method, properties, body):
@@ -32,22 +34,43 @@ def callback(ch, method, properties, body):
     else:
 
         # LOAD FEATURES
+        features_to_use=open('./features_to_use.json')
+        features_to_use = json.load(features_to_use)
+
+        # ACCOMPANIMENT
         if source == 'emotions_accompaniment':
             print('acompanhamento')
-            # clf = load('trainedModel.joblib')
-            # scaler = load('scaler.joblib')
+            clf = load( classifiers_path + 'accompaniment_model.joblib')
+            scaler = load(classifiers_path + 'accompaniment_scaler.joblib')
+            features_to_use = features_to_use['accompaniment']
+
+        # ORIGINAL
         if source == 'emotions_original':
             print('original')
-            # clf = load('trainedModel.joblib')
-            # scaler = load('scaler.joblib')
+            clf = load( classifiers_path + 'original_model.joblib')
+            scaler = load(classifiers_path + 'original_scaler.joblib')
+            features_to_use = features_to_use['original']
+
+        # VOCALS
         if source == 'emotions_vocals':
-            # clf = load('trainedModel.joblib')
-            # scaler = load('scaler.joblib')
             print("vocals")
+            clf = load( classifiers_path + 'vocal_model.joblib')
+            scaler = load(classifiers_path + 'vocal_scaler.joblib')
+            features_to_use = features_to_use['vocal']
+        # ALL AUDIO
         if source == 'emotions_allaudio':
-            # clf = load('trainedModel.joblib')
-            # scaler = load('scaler.joblib')
             print("allaudio")
+            clf = load( classifiers_path + 'allaudio_model.joblib')
+            scaler = load(classifiers_path + 'allaudio_scaler.joblib')
+            features_to_use = features_to_use['allaudio']
+
+        # LYRICS
+        if source == 'emotions_lyrics':
+            print("lyrics")
+            clf = load( classifiers_path + 'lyrics_model.joblib')
+            scaler = load(classifiers_path + 'lyrics_scaler.joblib')
+            features_to_use = features_to_use['lyrics']
+
 
     # name = b[0].split(".")[0]
     # toTest = [b[1],b[2],b[3]]
