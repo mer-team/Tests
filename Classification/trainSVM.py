@@ -7,17 +7,17 @@ from sklearn.metrics import plot_confusion_matrix, accuracy_score
 import matplotlib.pyplot as plt
 
 # variable 
-path_dataset = './datasets/vocal_after_correlation.csv'
-path_ranking = './feature_ranking/chi2/audio/vocal_20210813/chi2_features_weight_sorted.csv'
-num_of_features = 260
-cost = 0.1
-degree = 4
-gamma = 'scale'
-kernel = 'poly'
-classifier_name = './classifiers/vocal_model.joblib'
-scaler_name = './classifiers/vocal_scaler.joblib'
-figure_title = 'Confusion Matrix for dataset of Audio - Vocal'
-figure_name = 'vocal_confusion_matrix.png'
+path_dataset = './datasets/lyrics_features_after_correlation.csv'
+path_ranking = './feature_ranking/chi2/lyrics/alljava_20210813/chi2_features_weight_sorted.csv'
+num_of_features = 85
+cost = 100
+# degree = 4
+gamma = 0.01
+kernel = 'sigmoid'
+classifier_name = './classifiers/lyrics_model.joblib'
+scaler_name = './classifiers/lyrics_scaler.joblib'
+# figure_title = 'Confusion Matrix for dataset of Audio - Vocal'
+# figure_name = 'vocal_confusion_matrix.png'
 
 # read dataset
 dataset = pd.read_csv(path_dataset, sep = ";", index_col=False)
@@ -33,7 +33,7 @@ for feature in ranking.Features:
     to_use = pd.concat([to_use, features[feature]], axis=1)
 
 # standardization
-scaler = preprocessing.StandardScaler().fit(to_use)
+scaler = preprocessing.MinMaxScaler().fit(to_use)
 scaled_values = scaler.transform(to_use) 
 
 # classifier

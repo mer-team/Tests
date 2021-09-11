@@ -67,6 +67,8 @@ def callback(ch, method, properties, body):
             elif isinstance(features[key], numpy.ndarray):
                 counter = 1
                 for value in features[key]:
+                    if numpy.isinf(value) or numpy.isnan(value):
+                        value = 0
                     key1 = key.replace('.', '_')
                     txt = key1 + "[" + str(counter) + ']_' + body['source']
                     featExtracted[txt] = value
@@ -78,6 +80,8 @@ def callback(ch, method, properties, body):
                 else:
                     featExtracted[key1 + '_' + body['source']] = keyNotation(features[key])
             else:
+                if numpy.isinf(features[key]) or numpy.isnan(features[key]):
+                    features[key] = 0
                 key1 = key.replace('.', '_')
                 featExtracted[key1 + '_' + body['source']] = features[key]
         toSend = {

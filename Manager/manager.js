@@ -67,7 +67,7 @@ run = async () => {
                                 const doc = {
                                     videoID: result.vID, song: result.song, artist: result.artist,
                                     accompaniment: [], original: [], vocals: [], emotions_accompaniment: [],
-                                    emotions_original: [], emotions_vocals: [], emotions_allaudio: []
+                                    emotions_original: [], emotions_vocals: [], emotions_allaudio: [], emotions_lyrics: []
                                 };
                                 await collection.insertOne(doc).then(res => res = res);
 
@@ -242,14 +242,39 @@ run = async () => {
                                 // UPDATE DOCUMENT
                                 let lyrics = { $set: { lyrics: result.Filename } };
                                 await collection.updateOne({ videoID: result.videoID }, lyrics)
-                                // TO DO - END?
                             } else {
                                 // UPDATE DOCUMENT 
                                 let lyrics = { $set: { lyrics: result.Lyrics } };
                                 await collection.updateOne({ videoID: result.videoID }, lyrics);
-                                // TO DO - CALL FEATURE EXTRACTION
+                                var queue = 'lyricsFeatures';
+                                channel.assertQueue(queue, {
+                                    durable: false
+                                });
+
+                                let toSend = {
+                                    vID: result.videoID,
+                                    filename: result.Filename,
+                                }
+                                channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
+                                console.log(" [x] Sent %s to %s", toSend, queue);
+
                             }
                             break;
+                        case "LyricsFeaturesExtractor":
+                            let insert = { $set: { lyricsFeatures: result.features } };
+                            await collection.updateOne({ videoID: result.vID }, insert);
+                            var queue = 'classifyMusic';
+                            channel.assertQueue(queue, {
+                                durable: false
+                            });
+                            toSend = {
+                                vID: result.vID,
+                                features: result.features,
+                                source: 'emotions_lyrics'
+                            }
+                            channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
+                            console.log(" [x] Sent Features of Lyrics to %s", queue);
+                            break
                         case "Classifier":
                             let queryClassifier = {}
                             queryClassifier[result.source] = result.emotion;

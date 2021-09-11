@@ -39,56 +39,61 @@ def callback(ch, method, properties, body):
 
         # ACCOMPANIMENT
         if source == 'emotions_accompaniment':
-            print('acompanhamento')
             clf = load( classifiers_path + 'accompaniment_model.joblib')
             scaler = load(classifiers_path + 'accompaniment_scaler.joblib')
             features_to_use = features_to_use['accompaniment']
 
         # ORIGINAL
         if source == 'emotions_original':
-            print('original')
             clf = load( classifiers_path + 'original_model.joblib')
             scaler = load(classifiers_path + 'original_scaler.joblib')
             features_to_use = features_to_use['original']
 
         # VOCALS
         if source == 'emotions_vocals':
-            print("vocals")
             clf = load( classifiers_path + 'vocal_model.joblib')
             scaler = load(classifiers_path + 'vocal_scaler.joblib')
-            features_to_use = features_to_use['vocal']
+            features_to_use = features_to_use['vocals']
         # ALL AUDIO
         if source == 'emotions_allaudio':
-            print("allaudio")
             clf = load( classifiers_path + 'allaudio_model.joblib')
             scaler = load(classifiers_path + 'allaudio_scaler.joblib')
             features_to_use = features_to_use['allaudio']
 
         # LYRICS
         if source == 'emotions_lyrics':
-            print("lyrics")
             clf = load( classifiers_path + 'lyrics_model.joblib')
             scaler = load(classifiers_path + 'lyrics_scaler.joblib')
             features_to_use = features_to_use['lyrics']
 
+        to_classify = []
+        for feature in features_to_use:
+            to_classify.append(features[feature])
 
-    # name = b[0].split(".")[0]
-    # toTest = [b[1],b[2],b[3]]
-    # ft = scaler.transform([toTest])
-    # p = clf.predict(ft)
-    # print("Predict = ", p)
-    # emotion = ""
-    # if p == "1":
-    #     emotion = "Feliz"
-    # if p == "2":
-    #     emotion = "Tensa"    
-    # if p == "3":
-    #     emotion = "Triste"   
-    # if p == "4":
-    #     emotion = "Calma"
-    # r = requests.post("https://merapi.herokuapp.com/music/update", {'idVideo': name, 'emocao': emotion})
-    # print(r.status_code, r.reason)
-    # print(' [*] Waiting for messages. To exit press CTRL+C')
+        ft = scaler.transform([to_classify])
+        p = clf.predict(ft)
+        # p is array with one value in first position with result from predict
+        p = p[0]
+        emotion = ""
+        if p == 1:
+            emotion = "Feliz"
+        if p == 2:
+            emotion = "Tensa"    
+        if p == 3:
+            emotion = "Triste"   
+        if p == 4:
+            emotion = "Calma"
+
+        msg = {
+            "Service": "Classifier",
+            "Result": { "vID": vID, "source": source, "emotion": emotion }
+        }
+
+        channel.basic_publish(exchange='',
+                        routing_key='management',
+                        body=json.dumps(msg))
+        print(" [x] Sent %s to management" % msg)
+
 
 
 channel.basic_consume(queue='classifyMusic',
