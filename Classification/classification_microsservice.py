@@ -76,7 +76,7 @@ def callback(ch, method, properties, body):
         p = p[0]
         emotion = ""
         if p == 1:
-            emotion = "Feliz"
+            emotion = "Alegre"
         if p == 2:
             emotion = "Tensa"    
         if p == 3:

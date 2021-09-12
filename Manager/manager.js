@@ -33,11 +33,20 @@ run = async () => {
             if (error1) {
                 throw error1;
             }
+
+            var q = 'musicExtraction';
             var queue = 'management';
 
             channel.assertQueue(queue, {
                 durable: false
             });
+            channel.assertQueue(q, {
+                durable: false
+            });
+            // DELETE LATER
+            var url = "https://www.youtube.com/watch?v=rhTl_OyehF8"
+            channel.sendToQueue(q, Buffer.from(url));
+            console.log(" [x] Sent %s to %s", url, q);
 
             console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", queue);
             channel.consume(queue, async function (msg) {

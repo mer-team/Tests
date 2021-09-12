@@ -34,13 +34,13 @@ def callback(ch, method, properties, body):
         filename = info['song'] + ".txt"
         msg = {
             "Service": "LyricsExtractor",
-            "Result": { "Filename": filename, "Lyrics": str(song), "videoID": info['vID'] }
+            "Result": { "Filename": filename, "Lyrics": song.lyrics, "videoID": info['vID'] }
         }
 
         channel.basic_publish(exchange='',
                         routing_key='management',
                         body=json.dumps(msg))
-        print(" [x] Sent %s to management" % msg)
+        print(" [x] Sent Lyrics of %s to management" % filename)
     else:
         msg = {
             "Service": "LyricsExtractor",

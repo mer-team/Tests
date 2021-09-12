@@ -112,33 +112,31 @@ startScript = async () => {
 			if (error1) {
 				throw error1;
 			}
-			// var queue = 'musicExtraction';
+			var q = 'musicExtraction';
 
-			// channel.assertQueue(queue, { durable: false });
-			// console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", q);
-			// ch.consume(q, async function (msg) {
-			// 	console.log(" [x] Received %s", msg.content.toString());
-			// 	var url = msg.content.toString();
-			// https://www.youtube.com/watch?v=UN6wWphtRpk
-			var url = "https://www.youtube.com/watch?v=ALZHF5UqnU4";
-			// verifica se o vídeo é da categoria música
-			var vURL = await validURL(url).then(u => u)
-			if (vURL) {
-				// extração do vídeo
-				await extractVideo(url, channel).then();
-			} else {
-				var toSend = {
-					Service: "VidExtractor",
-					Result: "Not a music"
+			channel.assertQueue(q, { durable: false });
+			console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", q);
+			channel.consume(q, async function (msg) {
+				var url = msg.content.toString();
+				console.log(" [x] Received %s", url);
+				// validate if video if from category music
+				var vURL = await validURL(url).then(u => u)
+				if (vURL) {
+					// extração do vídeo
+					await extractVideo(url, channel).then();
+				} else {
+					var toSend = {
+						Service: "VidExtractor",
+						Result: "Not a music"
+					}
+
+					var queue = 'management';
+					channel.assertQueue(queue, { durable: false });
+					channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)), { persistent: false });
+					console.log(" [x] Sent %s to %s", toSend, queue);
 				}
-
-				var queue = 'management';
-				channel.assertQueue(queue, { durable: false });
-				channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)), { persistent: false });
-				console.log(" [x] Sent %s to %s", toSend, queue);
-			}
-		}, { noAck: true });
-		// });
+			}, { noAck: true });
+		});
 	});
 }
 
