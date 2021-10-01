@@ -96,7 +96,7 @@ def callback(ch, method, properties, body):
         channel.basic_publish(exchange='',
                         routing_key='management',
                         body=json.dumps(str(toSend)))
-        print(" [x] Sent ", "Features", " to Manager!!")
+        print(" [x] Sent ", "features ", body['source'], " of ", body['vID'], " to Manager!!")
 
     except Exception as error:
         print(error)

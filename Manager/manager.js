@@ -2,6 +2,7 @@ var amqp = require('amqplib/callback_api');
 const fs = require('fs');
 const { orderBy } = require('natural-orderby');
 const MongoClient = require('mongodb').MongoClient
+const axios = require('axios')
 // path onde estao as musicas segmentadas
 var path = '/vagrant/SourceSeparation/Spleeter/Output/'
 
@@ -33,26 +34,14 @@ run = async () => {
             if (error1) {
                 throw error1;
             }
-
-            var q = 'musicExtraction';
             var queue = 'management';
-
             channel.assertQueue(queue, {
                 durable: false
             });
-            channel.assertQueue(q, {
-                durable: false
-            });
-            // DELETE LATER
-            var url = "https://www.youtube.com/watch?v=rhTl_OyehF8"
-            channel.sendToQueue(q, Buffer.from(url));
-            console.log(" [x] Sent %s to %s", url, q);
-
             console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", queue);
             channel.consume(queue, async function (msg) {
+
                 try {
-
-
                     var body = JSON.parse(msg.content);
                     if (typeof body == 'string') {
                         console.log(" [x] Received Features")
@@ -68,6 +57,15 @@ run = async () => {
                         result = body.Result;
                     }
                     switch (service) {
+                        case "API":
+                            var q = 'musicExtraction';
+                            channel.assertQueue(q, {
+                                durable: false
+                            });
+                            const url = result.url;
+                            channel.sendToQueue(q, Buffer.from(url));
+                            console.log(" [x] Sent %s to %s", url, q);
+                            break;
                         case "VidExtractor":
                             if (result == "Not a music") {
                                 console.log("Not Music. Ending!")
@@ -197,7 +195,8 @@ run = async () => {
                                     toSend = {
                                         vID: result.vID,
                                         features: musicRecord.accompaniment[index],
-                                        source: 'emotions_accompaniment'
+                                        source: 'emotions_accompaniment',
+                                        last: 'False'
                                     }
 
                                     channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
@@ -206,7 +205,8 @@ run = async () => {
                                     toSend = {
                                         vID: result.vID,
                                         features: musicRecord.original[index],
-                                        source: 'emotions_original'
+                                        source: 'emotions_original',
+                                        last: 'False'
                                     }
                                     channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
                                     console.log(" [x] Sent %s to %s", `Features of original[${index}]`, queue);
@@ -214,18 +214,26 @@ run = async () => {
                                     toSend = {
                                         vID: result.vID,
                                         features: musicRecord.vocals[index],
-                                        source: 'emotions_vocals'
+                                        source: 'emotions_vocals',
+                                        last: 'False'
                                     }
                                     channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
                                     console.log(" [x] Sent %s to %s", `Features of vocals[${index}]`, queue);
                                     // allcombined
+                                    let last;
+                                    if (index == (numFiles - 1)) {
+                                        last = 'True';
+                                    } else {
+                                        last = 'False'
+                                    }
                                     if (typeof musicRecord.accompaniment[index] == 'string' ||
                                         typeof musicRecord.original[index] == 'string' ||
                                         typeof musicRecord.vocals[index] == 'string') {
                                         toSend = {
                                             vID: result.vID,
                                             features: "error",
-                                            source: 'emotions_allaudio'
+                                            source: 'emotions_allaudio',
+                                            last: last
                                         }
                                     } else {
                                         const merged = Object.assign({}, musicRecord.accompaniment[index],
@@ -233,7 +241,8 @@ run = async () => {
                                         toSend = {
                                             vID: result.vID,
                                             features: merged,
-                                            source: 'emotions_allaudio'
+                                            source: 'emotions_allaudio',
+                                            last: last
                                         }
                                     }
                                     channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
@@ -279,7 +288,8 @@ run = async () => {
                             toSend = {
                                 vID: result.vID,
                                 features: result.features,
-                                source: 'emotions_lyrics'
+                                source: 'emotions_lyrics',
+                                last: 'False'
                             }
                             channel.sendToQueue(queue, Buffer.from(JSON.stringify(toSend)));
                             console.log(" [x] Sent Features of Lyrics to %s", queue);
@@ -289,6 +299,18 @@ run = async () => {
                             queryClassifier[result.source] = result.emotion;
                             let appendClassifier = { $push: queryClassifier };
                             await collection.findOneAndUpdate({ videoID: result.vID }, appendClassifier);
+                            if (result.last == 'True') {
+                                let musicRecord;
+                                await collection.findOne({ videoID: result.vID }).then(res => musicRecord = res);
+                                const toSendAPI = {
+                                    'videoID': musicRecord.videoID, 'accompaniment': musicRecord.emotions_accompaniment,
+                                    'original': musicRecord.emotions_original, 'vocals': musicRecord.emotions_vocals,
+                                    'allaudio': musicRecord.emotions_allaudio, 'lyrics': musicRecord.emotions_lyrics
+                                }
+                                axios.post('http://localhost:8000/music/update', toSendAPI)
+                                    .then(function (response) { console.log('Success'); })
+                                    .catch(function (error) { console.log(error); });
+                            }
                             break;
                         default:
                         // code block

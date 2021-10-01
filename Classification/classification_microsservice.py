@@ -20,6 +20,7 @@ def callback(ch, method, properties, body):
     source = b['source']
     features = b['features']
     vID = b['vID']
+    last = b['last']
 
     if 'error' in features:
         msg = {
@@ -73,20 +74,11 @@ def callback(ch, method, properties, body):
         ft = scaler.transform([to_classify])
         p = clf.predict(ft)
         # p is array with one value in first position with result from predict
-        p = p[0]
-        emotion = ""
-        if p == 1:
-            emotion = "Alegre"
-        if p == 2:
-            emotion = "Tensa"    
-        if p == 3:
-            emotion = "Triste"   
-        if p == 4:
-            emotion = "Calma"
+        emotion = str(p[0])
 
         msg = {
             "Service": "Classifier",
-            "Result": { "vID": vID, "source": source, "emotion": emotion }
+            "Result": { "vID": vID, "source": source, "emotion": emotion, "last": last }
         }
 
         channel.basic_publish(exchange='',
