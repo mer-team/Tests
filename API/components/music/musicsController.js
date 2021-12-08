@@ -235,7 +235,7 @@ exports.updateEmocao = async (req, res) => {
     // if (musicaAtualizada != 0) {
     //     serverResponse = { status: "Atualizada", response: musicaAtualizada }
     // }
-    // return res.send(serverResponse);
+    return res.send("Success");
 }
 
 exports.getMusicasUser = async (req, res) => {

@@ -1,149 +1,132 @@
-src/AuxiliarFiles/DAL_ANEW.txt into /vagrant/Lyrics_dataset/771/mt0035119161.txt - Details
+src/AuxiliarFiles/DAL_ANEW.txt into /vagrant/Lyrics/Alone.txt - Details
 
 
 
 
 ###############################################
-/vagrant/Lyrics_dataset/771/mt0035119161.txt
+/vagrant/Lyrics/Alone.txt
 ###############################################
 
 
 --------------------------------------------
-Linha -> Showboat coming up the river
+Linha -> Im so alone nothing feels like home
 --------------------------------------------
- river 
- the 
- up 
-
-
---------------------------------------------
-Linha -> See her lanterns flicker in the gentle breeze
---------------------------------------------
- breeze 
- in 
- the 
-
-
---------------------------------------------
-Linha -> I can hear the crickets singing in the evening
---------------------------------------------
- can 
- in 
- the 
- the 
- the crickets 
-
-
---------------------------------------------
-Linha -> Old Dixie Lily moving past the cypress trees
---------------------------------------------
- the 
- trees 
-
-
---------------------------------------------
-Linha -> My little boat - she rocks easy
---------------------------------------------
- boat 
- easy 
- rocks 
- she 
-
-
---------------------------------------------
-Linha -> Ive been catching catfish in the creek all day
---------------------------------------------
- all 
- in 
- the 
-
-
---------------------------------------------
-Linha -> Oh and Ive never seen ladies like those on the big boats
---------------------------------------------
- big 
- ladies 
+ feels 
  like 
- on 
- the 
 
 
 --------------------------------------------
-Linha -> Must be fancy breeding lets you live that way
+Linha -> Im so alone trying to find my way back home to you
 --------------------------------------------
- fancy 
- live 
- that 
+ back 
  way 
  you 
 
 
 --------------------------------------------
-Linha -> Dixie Lily chugging like a grand old lady
+Linha -> Im so alone nothing feels like home
 --------------------------------------------
- a 
- grand 
+ feels 
  like 
- old 
- old lady 
 
 
 --------------------------------------------
-Linha -> Paddles hitting home in the noonday sun
+Linha -> Im so alone trying to find my way back home to you
 --------------------------------------------
- in 
- the 
+ back 
+ way 
+ you 
 
 
 --------------------------------------------
-Linha -> Plowing through the water with your whistles blowing
+Linha -> You you you you you you you you
 --------------------------------------------
- the 
- through 
+ you 
+ you 
+ you 
+ you 
+ you 
+ you 
+ you 
 
 
 --------------------------------------------
-Linha -> Down from Louisiana on the Vicksburg run
+Linha -> You you you you you you you you
 --------------------------------------------
- on 
- run 
- the 
+ you 
+ you 
+ you 
+ you 
+ you 
+ you 
+ you 
 
 
 --------------------------------------------
-Linha -> Papa says that Im a dreamer
+Linha -> Im so alone trying to find my way back home to you
 --------------------------------------------
- a 
- that 
+ back 
+ way 
+ you 
 
 
 --------------------------------------------
-Linha -> Says them squitas bit me one too many times
+Linha -> Im so alone nothing feels like home
 --------------------------------------------
- bit 
- me 
- one 
- too 
+ feels 
+ like 
 
 
 --------------------------------------------
-Linha -> Oh but I never get lonesome living on the river
+Linha -> Im so alone trying to find my way back home to you
 --------------------------------------------
- get 
- on 
- river 
- the 
+ back 
+ way 
+ you 
 
 
 --------------------------------------------
-Linha -> Watching old Lily leave the world behind
+Linha -> Im so alone nothing feels like home
 --------------------------------------------
- behind 
- leave the world 
- old 
- the 
+ feels 
+ like 
 
 
 --------------------------------------------
-Linha ->  
+Linha -> Im so alone trying to find my way back home to you
 --------------------------------------------
+ back 
+ way 
+ you 
+
+
+--------------------------------------------
+Linha -> You you you you you you you you
+--------------------------------------------
+ you 
+ you 
+ you 
+ you 
+ you 
+ you 
+ you 
+
+
+--------------------------------------------
+Linha -> You you you you you you you you
+--------------------------------------------
+ you 
+ you 
+ you 
+ you 
+ you 
+ you 
+ you 
+
+
+--------------------------------------------
+Linha -> Im so alone trying to find my way back home to you
+--------------------------------------------
+ back 
+ way 
+ you 

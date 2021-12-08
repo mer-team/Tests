@@ -1,0 +1,21 @@
+num_features,kernel,params,rank_test_score,mean_test_score,std_test_score
+10,1_2_scale_poly,"{'C': 1, 'degree': 2, 'gamma': 'scale', 'kernel': 'poly'}",29,0.5366319572292357,0.04207251482512702
+25,1_2_scale_poly,"{'C': 1, 'degree': 2, 'gamma': 'scale', 'kernel': 'poly'}",12,0.5927645284249218,0.048000174517536257
+50,1_2_scale_poly,"{'C': 1, 'degree': 2, 'gamma': 'scale', 'kernel': 'poly'}",12,0.6258303099160243,0.04771752337363069
+100,1_2_scale_poly,"{'C': 1, 'degree': 2, 'gamma': 'scale', 'kernel': 'poly'}",8,0.6508570818788716,0.04098352670310694
+122,1_2_scale_poly,"{'C': 1, 'degree': 2, 'gamma': 'scale', 'kernel': 'poly'}",12,0.6510264421309904,0.04418164289250764
+10,10_2_scale_poly,"{'C': 10, 'degree': 2, 'gamma': 'scale', 'kernel': 'poly'}",6,0.5465298385522231,0.046172967314241725
+25,10_2_scale_poly,"{'C': 10, 'degree': 2, 'gamma': 'scale', 'kernel': 'poly'}",29,0.5780867920875127,0.04994200648479509
+50,10_2_scale_poly,"{'C': 10, 'degree': 2, 'gamma': 'scale', 'kernel': 'poly'}",26,0.6161945240263056,0.04618835659621658
+100,10_2_scale_poly,"{'C': 10, 'degree': 2, 'gamma': 'scale', 'kernel': 'poly'}",22,0.6254649313052371,0.04187496299051418
+122,10_2_scale_poly,"{'C': 10, 'degree': 2, 'gamma': 'scale', 'kernel': 'poly'}",20,0.6315388147913802,0.04201474061898367
+10,1000_2_auto_poly,"{'C': 1000, 'degree': 2, 'gamma': 'auto', 'kernel': 'poly'}",13,0.5446938308393855,0.04423419429947812
+25,1000_2_auto_poly,"{'C': 1000, 'degree': 2, 'gamma': 'auto', 'kernel': 'poly'}",24,0.5824296216623561,0.05078046928707125
+50,1000_2_auto_poly,"{'C': 1000, 'degree': 2, 'gamma': 'auto', 'kernel': 'poly'}",10,0.632446815181805,0.04575780676975158
+100,1000_2_auto_poly,"{'C': 1000, 'degree': 2, 'gamma': 'auto', 'kernel': 'poly'}",9,0.6502777672851758,0.04003728177925018
+122,1000_2_auto_poly,"{'C': 1000, 'degree': 2, 'gamma': 'auto', 'kernel': 'poly'}",11,0.6521589206554169,0.043327001149061836
+10,1000_2_0.01_poly,"{'C': 1000, 'degree': 2, 'gamma': 0.01, 'kernel': 'poly'}",67,0.4588914710284681,0.04315526590016113
+25,1000_2_0.01_poly,"{'C': 1000, 'degree': 2, 'gamma': 0.01, 'kernel': 'poly'}",26,0.5800305193314899,0.05007259791396471
+50,1000_2_0.01_poly,"{'C': 1000, 'degree': 2, 'gamma': 0.01, 'kernel': 'poly'}",22,0.6188308075150649,0.044423378562313626
+100,1000_2_0.01_poly,"{'C': 1000, 'degree': 2, 'gamma': 0.01, 'kernel': 'poly'}",9,0.6502777672851758,0.04003728177925018
+122,1000_2_0.01_poly,"{'C': 1000, 'degree': 2, 'gamma': 0.01, 'kernel': 'poly'}",8,0.652180413309521,0.039609202361557
