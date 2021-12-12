@@ -1,4 +1,4 @@
-var musicsService = require('./musicsService');
+var musicDAL = require('../integrations/music.dal');
 const { check, validationResult } = require('express-validator/check');
 var jwt = require('jsonwebtoken');
 var amqp = require('amqplib/callback_api')
@@ -40,7 +40,7 @@ exports.uploadVideo = async (req, res) => {
 
         // check if music is already exists in database
         let existsMusica;
-        await musicsService.getVideo(videoId).then(mus => existsMusica = mus).catch(err => console.log(err));
+        await musicDAL.getVideo(videoId).then(mus => existsMusica = mus).catch(err => console.log(err));
         if (existsMusica != null) {
             serverResponse = { status: "Music already exists in database", response: existsMusica }
             return res.send(serverResponse)
@@ -48,7 +48,7 @@ exports.uploadVideo = async (req, res) => {
 
         // upload new music
         const musicDetails = { idVideo: videoId, name: title, url: url, emocao: "" /* , userFK: req.body.userFK */ }
-        await musicsService.uploadVideo(musicDetails);
+        await musicDAL.uploadVideo(musicDetails);
 
         amqp.connect(`amqp://${mq_user}:${mq_pass}@${mq_host}/`, function (err, conn) {
             conn.createChannel(function (err, ch) {
@@ -79,7 +79,7 @@ exports.getVideo = async (req, res) => {
     var urlBD;
     //variável que recolhe o parâmetro enviado na request
     var idVideo = req.params.idVideo;
-    await musicsService.getVideo(idVideo).then(url => urlBD = url).catch(err => console.log(err));
+    await musicDAL.getVideo(idVideo).then(url => urlBD = url).catch(err => console.log(err));
 
     if (urlBD != null) {
         serverResponse = { status: "URL com o id " + idVideo + " está na base de dados", response: urlBD }
@@ -92,7 +92,7 @@ exports.getVideoPesquisa = async (req, res) => {
 
     var musicas;
     var pesquisaRealizada = req.params.pesquisaMusica;
-    await musicsService.getVideoPesquisa(pesquisaRealizada).then(music => musicas = music).catch(err => console.log(err));
+    await musicDAL.getVideoPesquisa(pesquisaRealizada).then(music => musicas = music).catch(err => console.log(err));
     if (pesquisaRealizada != null) {
         var size = Object.keys(musicas).length;
         var dadosEnviar = [];
@@ -122,7 +122,7 @@ exports.getNomeMusicaPesquisa = async (req, res) => {
 
     var musicas;
     var pesquisaRealizada = req.params.pesquisaMusica;
-    await musicsService.getNomeMusicaPesquisa(pesquisaRealizada).then(music => musicas = music).catch(err => console.log(err));
+    await musicDAL.getNomeMusicaPesquisa(pesquisaRealizada).then(music => musicas = music).catch(err => console.log(err));
     if (pesquisaRealizada != null) {
 
 
@@ -138,7 +138,7 @@ exports.getLastVideos = async (req, res) => {
     var token;
     token = req.headers['x-access-token'];
     if (token == "null") {
-        await musicsService.getLastVideos().then(mus => musicas = mus).catch(err => console.log(err))
+        await musicDAL.getLastVideos().then(mus => musicas = mus).catch(err => console.log(err))
         if (musicas.length > 0) {
             var size = Object.keys(musicas).length;
             var dadosEnviar = [];
@@ -165,7 +165,7 @@ exports.getLastVideos = async (req, res) => {
     else {
         try {
             jwt.verify(token, 'secret');
-            await musicsService.getLastVideos().then(mus => musicas = mus).catch(err => console.log(err))
+            await musicDAL.getLastVideos().then(mus => musicas = mus).catch(err => console.log(err))
             if (musicas.length > 0) {
                 var size = Object.keys(musicas).length;
                 var dadosEnviar = [];
@@ -211,7 +211,7 @@ exports.deleteMusic = async (req, res) => {
         jwt.verify(token, 'secret');
         //apagar música
 
-        await musicsService.deleteMusic(musicaApagar).then(mus => musicaDelete = mus).catch(err => console.log(err));
+        await musicDAL.deleteMusic(musicaApagar).then(mus => musicaDelete = mus).catch(err => console.log(err));
         if (musicaDelete != 0) {
             serverResponse = { status: "Deleted", response: musicaDelete }
         }
@@ -231,7 +231,7 @@ exports.updateEmocao = async (req, res) => {
     console.log(features)
 
     // //atualizar música
-    // await musicsService.updateMusic(musicaUpdate, dadosEmocao).then(mus => musicaAtualizada = mus).catch(err => console.log(err));
+    // await musicDAL.updateMusic(musicaUpdate, dadosEmocao).then(mus => musicaAtualizada = mus).catch(err => console.log(err));
     // if (musicaAtualizada != 0) {
     //     serverResponse = { status: "Atualizada", response: musicaAtualizada }
     // }
@@ -251,7 +251,7 @@ exports.getMusicasUser = async (req, res) => {
     }
     try {
         jwt.verify(token, 'secret');
-        await musicsService.getMusicasUser(userFK).then(mus => musicas = mus).catch(err => console.log(err));
+        await musicDAL.getMusicasUser(userFK).then(mus => musicas = mus).catch(err => console.log(err));
         if (musicas != 0) {
             serverResponse = { status: "Musicas associadas ao utilizador", response: musicas }
         }
@@ -271,7 +271,7 @@ exports.getMusicProcessing = async (req, res) => {
 
 
 
-    await musicsService.getMusicProcessing().then(mus => musicasProcess = mus).catch(err => console.log(err))
+    await musicDAL.getMusicProcessing().then(mus => musicasProcess = mus).catch(err => console.log(err))
     if (musicasProcess !== undefined) {
         serverResponse = { status: "Músicas em processamento", response: musicasProcess }
     }
@@ -282,7 +282,7 @@ exports.getMusicByEmotion = async (req, res) => {
     let serverResponse = { status: "Não existe músicas com esta emoção", response: {} }
     var musicasEmocao;
     var emocao = req.params.emocao;
-    await musicsService.getMusicByEmotion(emocao).then(mus => musicasEmocao = mus).catch(err => console.log(err))
+    await musicDAL.getMusicByEmotion(emocao).then(mus => musicasEmocao = mus).catch(err => console.log(err))
     if (musicasEmocao.length > 0) {
         var size = Object.keys(musicasEmocao).length;
         var dadosEnviar = [];

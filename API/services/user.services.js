@@ -1,7 +1,6 @@
-//funções que retorna a resposta
 const { check, validationResult } = require('express-validator/check');
 
-var usersService = require('./usersService')
+var userDAL = require('../integrations/user.dal')
 var bcrypt = require('bcryptjs');
 var jwt = require('jsonwebtoken');
 //var getToken = require('../auxiliares/token');
@@ -15,10 +14,10 @@ exports.createUser = async (req, res) => {
     var existsUserName;
     //token
     var token = req.headers['x-access-token'];
-      if (!token) {
-         serverResponse = {status:"Nao está autenticado | token expirou",response:{}}
-          return res.send(serverResponse);
-      }
+    if (!token) {
+        serverResponse = { status: "Nao está autenticado | token expirou", response: {} }
+        return res.send(serverResponse);
+    }
 
     try {
         jwt.verify(token, 'secret');
@@ -36,10 +35,10 @@ exports.createUser = async (req, res) => {
         req.check('hashPassword', 'Password é obrigatória ou tem o formato errado').notEmpty().matches(/(?=^.{8,}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/);
 
         //verificar se o email inserido existe na base de dados
-        await usersService.getUserByEmail(req.body.email).then(user => existsEmail = user).catch(err => console.log(err));
+        await userDAL.getUserByEmail(req.body.email).then(user => existsEmail = user).catch(err => console.log(err));
 
         //verificar se o username inserido existe na base de dados
-        await usersService.getUser(req.body.username).then(user => existsUserName = user).catch(err => console.log(err));
+        await userDAL.getUser(req.body.username).then(user => existsUserName = user).catch(err => console.log(err));
 
         //se o email existe
         if (existsEmail != null || existsUserName != null) {
@@ -68,7 +67,7 @@ exports.createUser = async (req, res) => {
             }
             var createUser;
             //criação de um novo user de acordo com os parâmetros recebidos
-            await usersService.createUser(newUser).then(user => createUser = user).catch(err => console.log(err));
+            await userDAL.createUser(newUser).then(user => createUser = user).catch(err => console.log(err));
             if (createUser != null) {
                 serverResponse = { status: "Utilizador Criado com Sucesso", response: createUser };
             }
@@ -98,7 +97,7 @@ exports.getUser = async (req, res) => {
     try {
         //validar
         jwt.verify(token, 'secret');
-        await usersService.getUser(userName).then(user => getUser = user).catch(err => console.log(err));
+        await userDAL.getUser(userName).then(user => getUser = user).catch(err => console.log(err));
         if (getUser != null) {
             serverResponse = { status: "Utilizador está na base de dados", response: getUser }
         }
@@ -126,7 +125,7 @@ exports.getAllUsers = async (req, res) => {
     try {
         //validar
         jwt.verify(token, 'secret');
-        await usersService.getAllUsers().then(user => allUsers = user).catch(err => console.log(err));
+        await userDAL.getAllUsers().then(user => allUsers = user).catch(err => console.log(err));
         if (allUsers != null) {
             serverResponse = { status: "Utilizadores na Base de Dados", response: allUsers }
             return res.send(serverResponse);
@@ -210,13 +209,13 @@ exports.editUser = async (req, res) => {
     }
 
     //verificar se o email inserido existe na base de dados
-    await usersService.getUserByEmail(req.body.email).then(user => existsEmail = user).catch(err => console.log(err));
+    await userDAL.getUserByEmail(req.body.email).then(user => existsEmail = user).catch(err => console.log(err));
 
     //verificar se o username inserido existe na base de dados
-    await usersService.getUser(req.body.username).then(user => existsUserName = user).catch(err => console.log(err));
+    await userDAL.getUser(req.body.username).then(user => existsUserName = user).catch(err => console.log(err));
 
     //verificar se o username inserido existe na base de dados
-    await usersService.getUser(req.params.username).then(user => existsUserNameURL = user).catch(err => console.log(err));
+    await userDAL.getUser(req.params.username).then(user => existsUserNameURL = user).catch(err => console.log(err));
     //token
     var token = req.headers['x-access-token'];
     //se o token não existir
@@ -235,9 +234,9 @@ exports.editUser = async (req, res) => {
             //verificar se email e username já estão na base de dados
             if (existsEmail == null && existsUserName == null) {
                 //update à base de dados
-                await usersService.editUser(updateUser, userName).then(user => userUpdate = user).catch(err => console.log(err));
+                await userDAL.editUser(updateUser, userName).then(user => userUpdate = user).catch(err => console.log(err));
                 if (userUpdate != 0) {
-                    await usersService.getUser(username).then(user => userAlterado = user).catch(err => console.log(err));
+                    await userDAL.getUser(username).then(user => userAlterado = user).catch(err => console.log(err));
                     serverResponse = { status: "Updated", response: userAlterado }
                 }
             }
@@ -269,7 +268,7 @@ exports.deleteUser = async (req, res) => {
         //validar
         jwt.verify(token, 'secret');
         //apagar utilizador
-        await usersService.deleteUser(userName).then(user => userDelete = user).catch(err => console.log(err));
+        await userDAL.deleteUser(userName).then(user => userDelete = user).catch(err => console.log(err));
         if (userDelete != 0) {
             serverResponse = { status: "Deleted", response: userDelete }
         }
@@ -285,9 +284,9 @@ exports.login = async (req, res) => {
     var username = req.body.username;
     let code = 200;
     //verficar se existe algum utilizador na base de dados com o  username inserido
-    await usersService.getUser(username).then(user => existsUserName = user).catch(err => console.log(err));
+    await userDAL.getUserByUsername(username).then(user => existsUserName = user).catch(err => console.log(err));
     //se não existir esse utilizador ou a password estiver errada
-    if (existsUserName == null || !bcrypt.compareSync(req.body.hashPassword, existsUserName.hashPassword)) {
+    if (existsUserName == null || !bcrypt.compareSync(req.body.hashPassword, existsUserName.dataValues.hashPassword)) {
         serverResponse.status = "Username ou password errados";
 
     }
@@ -298,9 +297,9 @@ exports.login = async (req, res) => {
             userID: existsUserName.userID, username: existsUserName.username,
             nome: existsUserName.nome, isAdmin: existsUserName.isAdmin
         }, 'secret', {
-                expiresIn: 2000 // expires in 10 minutos ***PARA TESTES****
+            expiresIn: 2000 // expires in 10 minutos ***PARA TESTES****
 
-            });
+        });
         serverResponse.status = "Autenticado";
         serverResponse.response = existsUserName;
         serverResponse.token = token;
@@ -308,4 +307,21 @@ exports.login = async (req, res) => {
     //resposta do servidor
     res
         .json(serverResponse);
+}
+
+exports.refreshToken = async (req, res) => {
+
+    let serverResponse = { status: "Token Não Atualizado", response: {} }
+
+    var token = jwt.sign({
+        userID: req.body.userID, username: req.body.username,
+        nome: req.body.nome, isAdmin: req.body.isAdmin
+    }, 'secret', {
+        expiresIn: 2000 // expires in 10 minutos ***PARA TESTES****
+
+    });
+    serverResponse.status = "Token Atualizado";
+    serverResponse.response = token;
+    //resposta do servidor
+    res.json(serverResponse);
 }

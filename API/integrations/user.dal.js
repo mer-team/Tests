@@ -1,6 +1,6 @@
 
 // var models = require('../models')
-var models = require('../../models/index');
+var models = require('../models/index');
 
 exports.createUser = async (user) => {
     await models.User.create(user);
@@ -9,7 +9,7 @@ exports.createUser = async (user) => {
 exports.getUserByUsername = async (username) => {
   var user;
   await models.User.findOne( {where: {username:username},include:[models.Music]}).then(usr => user = usr).catch(err => console.log(err));
-  return user
+  return user;
 }
 
 exports.getUserByEmail = async (email) =>{

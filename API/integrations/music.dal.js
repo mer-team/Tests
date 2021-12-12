@@ -1,8 +1,7 @@
-// var models = require('../models/index');
-var models = require('../../models/index');
+var models = require('../models/index');
 
 var Sequelize = require('sequelize');
-const Op = Sequelize.Op;   
+const Op = Sequelize.Op;
 
 exports.uploadVideo = async (music) => {
     await models.Music.create(music);
@@ -11,25 +10,25 @@ exports.uploadVideo = async (music) => {
 exports.getVideo = async (idVideo) => {
     var musica;
     // await models.Music.findOne({ where: { idVideo: idVideo },include:[models.Feedback],include:[models.ListaMusicas]}).then(music => musica = music).catch(err => console.log(err))
-    await models.Music.findOne({ where: { idVideo: idVideo }}).then(music => musica = music).catch(err => console.log(err))
+    await models.Music.findOne({ where: { idVideo: idVideo } }).then(music => musica = music).catch(err => console.log(err))
     return musica;
 }
 
 exports.getVideoPesquisa = async (pesquisaMusica) => {
     var pesquisa;
-     await models.Music.findAll({ where: { name: { $like: '%' + pesquisaMusica + '%' }, emocao: { [Op.ne]: "" } } }).then(music => pesquisa = music).catch(err => console.log(err))
+    await models.Music.findAll({ where: { name: { $like: '%' + pesquisaMusica + '%' }, emocao: { [Op.ne]: "" } } }).then(music => pesquisa = music).catch(err => console.log(err))
     return pesquisa;
 }
 
 exports.getNomeMusicaPesquisa = async (pesquisaMusica) => {
     var pesquisa;
-    await models.Music.findAll({ where: { name: { $like: '%' + pesquisaMusica + '%' },  emocao: { [Op.ne]: "" } } }).then(music => pesquisa = music).catch(err => console.log(err))
+    await models.Music.findAll({ where: { name: { $like: '%' + pesquisaMusica + '%' }, emocao: { [Op.ne]: "" } } }).then(music => pesquisa = music).catch(err => console.log(err))
     return pesquisa;
 }
 
 exports.getLastVideos = async () => {
     var musicas;
-    await models.Music.findAll({ where:{emocao: { [Op.ne]: "" }}, order: [['createdAt', 'DESC']], limit: 4 })
+    await models.Music.findAll({ where: { emocao: { [Op.ne]: "" } }, order: [['createdAt', 'DESC']], limit: 4 })
         .then(mus => musicas = mus).catch(err => console.log(err));
     return musicas;
 }
@@ -46,27 +45,27 @@ exports.updateMusic = async (idVideo, emocao) => {
     return musica;
 }
 
-exports.getMusicasUser = async(userFK) =>{
+exports.getMusicasUser = async (userFK) => {
     var musicas;
     await models.Music.findAll({ where: { userFK: userFK } }).then(mus => musicas = mus).catch(err => console.log(err))
     return musicas;
 }
 
-exports.getMusicasID = async(musicFK) =>{
+exports.getMusicasID = async (musicFK) => {
     var musicas;
     await models.Music.findAll({ where: { id: musicFK } }).then(mus => musicas = mus).catch(err => console.log(err))
     return musicas;
 }
 
-exports.getMusicProcessing = async() =>{
+exports.getMusicProcessing = async () => {
     var musicas;
-    await models.Music.findAll({ where: { emocao:"" }}).then(mus => musicas = mus).catch(err => console.log(err))
+    await models.Music.findAll({ where: { emocao: "" } }).then(mus => musicas = mus).catch(err => console.log(err))
     return musicas;
 }
 
-exports.getMusicByEmotion = async(emocao) =>{
+exports.getMusicByEmotion = async (emocao) => {
     var musicas;
-    await models.Music.findAll({ where:{emocao: { [Op.eq]: emocao }}, order: [['createdAt', 'DESC']], limit: 4 })
+    await models.Music.findAll({ where: { emocao: { [Op.eq]: emocao } }, order: [['createdAt', 'DESC']], limit: 4 })
         .then(mus => musicas = mus).catch(err => console.log(err));
     return musicas;
 }

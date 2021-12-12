@@ -14,14 +14,6 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.Music, {
         foreignKey: 'userFK',
       });
-
-      User.hasMany(models.ListaRepro, {
-        foreignKey: 'userFK',
-      });
-
-      User.hasMany(models.Feedback, {
-        foreignKey: 'userFK',
-      });
     }
   };
   User.init({
