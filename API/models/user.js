@@ -11,21 +11,14 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      User.hasMany(models.Music, {
-        foreignKey: 'userFK',
-      });
+      User.hasMany(models.Music, {foreignKey: 'userFK'})
     }
   };
   User.init({
-    userID: {
-      type: DataTypes.UUID,
-      primaryKey: true,
-      defaultValue: DataTypes.UUIDV4
-    },
     email: DataTypes.STRING,
     username: DataTypes.STRING,
-    hashPassword: DataTypes.STRING,
-    nome: DataTypes.STRING,
+    password: DataTypes.STRING,
+    name: DataTypes.STRING,
     isAdmin: DataTypes.BOOLEAN
   }, {
     sequelize,

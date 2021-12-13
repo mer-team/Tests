@@ -1,32 +1,38 @@
 'use strict';
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('Users', {
-      userID: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+    await queryInterface.createTable('Music', {
+      id: {
+        allowNull: false,
+        autoIncrement: true,
         primaryKey: true,
-        allowNull: false
+        type: Sequelize.INTEGER
       },
-      email: {
+      videoID: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      username: {
+      artist: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      hashPassword: {
+      title: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      nome: {
+      url: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      isAdmin: {
-        type: Sequelize.BOOLEAN,
-        allowNull: false
+      userFK: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'Users', // name of Source model
+          key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL',
+        allowNull: false,
       },
       createdAt: {
         allowNull: false,
@@ -39,6 +45,6 @@ module.exports = {
     });
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('Users');
+    await queryInterface.dropTable('Music');
   }
 };

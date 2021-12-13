@@ -1,3 +1,4 @@
+const colors = require('colors');
 var musicDAL = require('../integrations/music.dal');
 const { check, validationResult } = require('express-validator/check');
 var jwt = require('jsonwebtoken');
@@ -132,64 +133,39 @@ exports.getNomeMusicaPesquisa = async (req, res) => {
 }
 
 exports.getLastVideos = async (req, res) => {
-    let serverResponse = { status: "Ainda não existem músicas na Base de Dados", response: {} }
-    //variável que guarda a query à base de dados
-    var musicas;
-    var token;
-    token = req.headers['x-access-token'];
-    if (token == "null") {
-        await musicDAL.getLastVideos().then(mus => musicas = mus).catch(err => console.log(err))
-        if (musicas.length > 0) {
-            var size = Object.keys(musicas).length;
-            var dadosEnviar = [];
-            for (let i = 0; i < size; i++) {
-                await ytdl.getInfo(musicas[i].idVideo).then(function (videoInfo, err) {
+    try {
+        let musics;
+        await musicDAL.getLastVideos().then(res => musics = res);
+        if (musics.length > 0) {
+            let toSend = [];
+
+            for (let i = 0; i < musics.length; i++) {
+                const music = musics[i];
+                await ytdl.getInfo(music.videoID).then(function (videoInfo, err) {
                     if (err) throw new Error(err);
 
-                    const autor = videoInfo.videoDetails.name;
-                    const dataPublicacao = videoInfo.videoDetails.publishDate;
-                    const numViews = videoInfo.videoDetails.viewCount;
-                    const numDislikes = videoInfo.videoDetails.dislikes;
-                    const numLikes = videoInfo.videoDetails.likes;
-                    dadosEnviar[i] = {
-                        numViews: numViews, numDislikes: numDislikes, numLikes: numLikes, emocao: musicas[i].emocao,
-                        id: musicas[i].id, idVideo: musicas[i].idVideo, nome: musicas[i].name, url: musicas[i].url, autor: autor, dataPublicacao: dataPublicacao,
+                    const viewCount = videoInfo.videoDetails.viewCount;
+                    const likes = videoInfo.videoDetails.likes;
+                    const author = videoInfo.videoDetails.name;
+                    const publishDate = videoInfo.videoDetails.publishDate;
+
+                    toSend[i] = {
+                        viewCount: viewCount, likes: likes, id: music.id, videoID: music.videoID,
+                        title: music.title, url: music.url, author: author, publishDate: publishDate
                     }
 
                 });
             }
-            serverResponse = { status: "Últimas músicas classificadas", response: dadosEnviar }
+            let serverResponse = { status: `Last ${musics.length} musics.`, response: toSend }
+            return res.send(serverResponse);
+        } else {
+            let serverResponse = { status: "Table Music is empty.", response: {} }
+            return res.send(serverResponse);
         }
+    } catch (error) {
+        console.error(colors.red(error));
+        let serverResponse = { status: `Error`, response: error }
         return res.send(serverResponse);
-    }
-    else {
-        try {
-            jwt.verify(token, 'secret');
-            await musicDAL.getLastVideos().then(mus => musicas = mus).catch(err => console.log(err))
-            if (musicas.length > 0) {
-                var size = Object.keys(musicas).length;
-                var dadosEnviar = [];
-                for (let i = 0; i < size; i++) {
-                    await ytdl.getInfo(musicas[i].idVideo).then(function (videoInfo, err) {
-                        if (err) throw new Error(err);
-                        const autor = videoInfo.videoDetails.name;
-                        const dataPublicacao = videoInfo.videoDetails.publishDate;
-                        const numViews = videoInfo.videoDetails.viewCount;
-                        const numDislikes = videoInfo.videoDetails.dislikes;
-                        const numLikes = videoInfo.videoDetails.likes;
-                        dadosEnviar[i] = {
-                            id: musicas[i].id, idVideo: musicas[i].idVideo, nome: musicas[i].name, url: musicas[i].url, autor: autor, dataPublicacao: dataPublicacao,
-                            numViews: numViews, numDislikes: numDislikes, numLikes: numLikes, emocao: musicas[i].emocao
-                        }
-                    });
-                }
-                serverResponse = { status: "Últimas músicas classificadas", response: dadosEnviar }
-            }
-            return res.send(serverResponse);
-        } catch (err) {
-            serverResponse = { status: "token expired", response: {} }
-            return res.send(serverResponse);
-        }
     }
 }
 

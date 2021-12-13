@@ -1,5 +1,4 @@
 'use strict';
-const models = require('./index');
 const {
   Model
 } = require('sequelize');
@@ -12,23 +11,15 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Music.belongsTo(models.User, {
-        foreignKey: 'userFK',
-      });
-
+      Music.belongsTo(models.User, {foreignKey:'userFK'})
     }
   };
   Music.init({
-    id: {
-      type: DataTypes.UUID,
-      primaryKey: true,
-      defaultValue: DataTypes.UUIDV4
-    },
-    idVideo: DataTypes.STRING,
-    name: DataTypes.STRING,
+    videoID: DataTypes.STRING,
+    artist: DataTypes.STRING,
+    title: DataTypes.STRING,
     url: DataTypes.STRING,
-    emocao: DataTypes.STRING,
-
+    userFK: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Music',
