@@ -138,7 +138,7 @@ exports.getLastVideos = async (req, res) => {
         await musicDAL.getLastVideos().then(res => musics = res);
         if (musics.length > 0) {
             let toSend = [];
-
+            console.log(musics)
             for (let i = 0; i < musics.length; i++) {
                 const music = musics[i];
                 await ytdl.getInfo(music.videoID).then(function (videoInfo, err) {
@@ -151,7 +151,7 @@ exports.getLastVideos = async (req, res) => {
 
                     toSend[i] = {
                         viewCount: viewCount, likes: likes, id: music.id, videoID: music.videoID,
-                        title: music.title, url: music.url, author: author, publishDate: publishDate
+                        title: music.title, url: music.url, author: author, publishDate: publishDate, emotions: music.emotions
                     }
 
                 });

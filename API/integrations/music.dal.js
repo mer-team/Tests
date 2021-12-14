@@ -28,7 +28,8 @@ exports.getNomeMusicaPesquisa = async (pesquisaMusica) => {
 
 exports.getLastVideos = async () => {
     var musicas;
-    await models.Music.findAll({ order: [['createdAt', 'DESC']], limit: 4 }).then(mus => musicas = mus).catch(err => console.log(err));
+    await models.Music.findAll({ order: [['createdAt', 'DESC']],include:[models.emotion], limit: 4 }).then(mus => musicas = mus).catch(err => console.log(err));
+    console.log(musicas)
     return musicas;
 }
 
