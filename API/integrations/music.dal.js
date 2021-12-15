@@ -7,11 +7,10 @@ exports.uploadVideo = async (music) => {
     await models.Music.create(music);
 }
 
-exports.getVideo = async (idVideo) => {
-    var musica;
-    // await models.Music.findOne({ where: { idVideo: idVideo },include:[models.Feedback],include:[models.ListaMusicas]}).then(music => musica = music).catch(err => console.log(err))
-    await models.Music.findOne({ where: { idVideo: idVideo } }).then(music => musica = music).catch(err => console.log(err))
-    return musica;
+exports.getVideo = async (videoId) => {
+    var music;
+    await models.Music.findOne({ where: { videoID: videoId }, include: [models.emotion]}).then(res => music = res);
+    return music;
 }
 
 exports.getVideoPesquisa = async (pesquisaMusica) => {
@@ -27,10 +26,9 @@ exports.getNomeMusicaPesquisa = async (pesquisaMusica) => {
 }
 
 exports.getLastVideos = async () => {
-    var musicas;
-    await models.Music.findAll({ order: [['createdAt', 'DESC']],include:[models.emotion], limit: 4 }).then(mus => musicas = mus).catch(err => console.log(err));
-    console.log(musicas)
-    return musicas;
+    let musics;
+    await models.Music.findAll({ order: [['createdAt', 'DESC']], include: [models.emotion], limit: 4 }).then(res => musics = res);
+    return musics;
 }
 
 exports.deleteMusic = async (idVideo) => {

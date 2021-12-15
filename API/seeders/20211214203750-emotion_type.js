@@ -12,19 +12,16 @@ module.exports = {
      * }], {});
     */
     return await queryInterface.bulkInsert('emotion_types', [{
-      id: 1,
       name: 'Quadrants',
       createdAt: new Date(),
       updatedAt: new Date()
     },
     {
-      id: 2,
       name: 'Arousal',
       createdAt: new Date(),
       updatedAt: new Date()
     },
     {
-      id: 3,
       name: 'Valence',
       createdAt: new Date(),
       updatedAt: new Date()

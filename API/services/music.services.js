@@ -1,8 +1,8 @@
 const colors = require('colors');
-var musicDAL = require('../integrations/music.dal');
+const musicDAL = require('../integrations/music.dal');
 const { check, validationResult } = require('express-validator/check');
-var jwt = require('jsonwebtoken');
-var amqp = require('amqplib/callback_api')
+const jwt = require('jsonwebtoken');
+const amqp = require('amqplib/callback_api')
 const ytdl = require('ytdl-core');
 const mq_host = process.env.MQ_HOST || 'localhost',
     mq_user = process.env.MQ_USER || 'guest',
@@ -11,17 +11,17 @@ const mq_host = process.env.MQ_HOST || 'localhost',
 exports.uploadVideo = async (req, res) => {
     let serverResponse = { status: "Not Uploaded", response: {} }
     // check URL format
-    req.check('urlInput', 'The URL must follow the following format: http(s)://www.youtube.com/watch?v=idVideo')
+    req.check('url', 'The URL must follow the following format, where the videoId contains 11 characters: http(s)://www.youtube.com/watch?v=videoId')
         .matches(/^(http(s)??\:\/\/)?(www\.)?(youtube\.com\/watch\?v=)([a-zA-Z0-9\-_]){11}$/);
 
     // check for errors in validations
     let errors = req.validationErrors();
     if (errors) {
         serverResponse = { status: "Errors in validations", response: errors }
-        return res.send(serverResponse)
+        return res.status(400).send(serverResponse)
     }
     else {
-        const url = req.body.urlInput;
+        const url = req.body.url;
         let category, title, videoId;
         try {
             // get video details
@@ -29,48 +29,55 @@ exports.uploadVideo = async (req, res) => {
             category = result.videoDetails.media.category;
             title = result.videoDetails.title;
             videoId = result.videoDetails.videoId;
+            artist = result.videoDetails.media.artist;
             // check if video has category Music
             if (category != "Music") {
                 serverResponse = { status: "Error", response: "Not a music" }
-                return res.send(serverResponse)
+                return res.status(200).send(serverResponse)
             }
         } catch (err) {
             serverResponse = { status: "Error", response: "Unable to get video" }
-            return res.send(serverResponse)
+            return res.status(200).send(serverResponse)
         }
+        try {
+            // check if a song already exists in the database
+            let musicExists;
+            await musicDAL.getVideo(videoId).then(mus => musicExists = mus);
+            if (musicExists != null) {
+                serverResponse = { status: "Song already exists in the database.", response: musicExists }
+                return res.status(200).send(serverResponse)
+            }
 
-        // check if music is already exists in database
-        let existsMusica;
-        await musicDAL.getVideo(videoId).then(mus => existsMusica = mus).catch(err => console.log(err));
-        if (existsMusica != null) {
-            serverResponse = { status: "Music already exists in database", response: existsMusica }
-            return res.send(serverResponse)
-        }
+            // upload new music
+            const musicDetails = { videoID: videoId, artist: artist, title: title, url: url, userFK: req.body.userFK }
+            await musicDAL.uploadVideo(musicDetails);
 
-        // upload new music
-        const musicDetails = { idVideo: videoId, name: title, url: url, emocao: "" /* , userFK: req.body.userFK */ }
-        await musicDAL.uploadVideo(musicDetails);
-
-        amqp.connect(`amqp://${mq_user}:${mq_pass}@${mq_host}/`, function (err, conn) {
-            conn.createChannel(function (err, ch) {
-                const queue = 'management';
-                ch.assertQueue(queue, { durable: false });
-                const message = {
-                    Service: "API",
-                    Result: {
-                        "url": url
+            amqp.connect(`amqp://${mq_user}:${mq_pass}@${mq_host}/`, function (err, conn) {
+                conn.createChannel(function (err, ch) {
+                    const queue = 'management';
+                    ch.assertQueue(queue, { durable: false });
+                    const message = {
+                        Service: "API",
+                        Result: {
+                            "url": url
+                        }
                     }
-                }
-                ch.sendToQueue(queue, Buffer.from(JSON.stringify(message)), { persistent: false });
-                console.log(" [x] Sent %s to %s", JSON.stringify(message), queue);
+                    ch.sendToQueue(queue, Buffer.from(JSON.stringify(message)), { persistent: false });
+                    console.log(" [x] Sent %s to %s", JSON.stringify(message), queue);
+                });
+                setTimeout(function () { conn.close(); /*process.exit(0)*/ }, 500);
             });
-            setTimeout(function () { conn.close(); /*process.exit(0)*/ }, 500);
-        });
 
-        serverResponse = { status: "Upload", response: "Music was successfully inserted" }
-        return res.send(serverResponse);
+            serverResponse = { status: "Upload", response: "Music was successfully inserted" }
+            return res.send(serverResponse);
+        } catch (error) {
+            console.error(colors.red(error));
+            serverResponse = { status: "Error", response: "Internal error" }
+            return res.status(500).send(serverResponse);
 
+        }
     }
+
 
 }
 
@@ -138,7 +145,7 @@ exports.getLastVideos = async (req, res) => {
         await musicDAL.getLastVideos().then(res => musics = res);
         if (musics.length > 0) {
             let toSend = [];
-            console.log(musics)
+
             for (let i = 0; i < musics.length; i++) {
                 const music = musics[i];
                 await ytdl.getInfo(music.videoID).then(function (videoInfo, err) {
@@ -204,7 +211,7 @@ exports.updateEmocao = async (req, res) => {
     const videoID = req.body.videoID;
     delete req.body.videoID;
     const features = req.body;
-    console.log(features)
+    console.log(req.body)
 
     // //atualizar música
     // await musicDAL.updateMusic(musicaUpdate, dadosEmocao).then(mus => musicaAtualizada = mus).catch(err => console.log(err));

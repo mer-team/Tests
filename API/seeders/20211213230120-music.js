@@ -3,7 +3,6 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     return await queryInterface.bulkInsert('Music', [{
-      id: 1,
       videoID: "ALZHF5UqnU4",
       artist: "Marshmello",
       title: "Marshmello - Alone (Official Music Video)",
